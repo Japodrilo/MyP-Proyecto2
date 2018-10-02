@@ -1,16 +1,23 @@
 # MyP-Proyecto2
 Repositorio para el Proyecto 2 en Modelado y Programación
 
-Lenguaje utilizado: go version go1.11 linux/amd64
-
-Dependencias: [gotk3](https://github.com/gotk3/gotk3)
-              [go-mp3](https://github.com/hajimehoshi/go-mp3)
-              [oto](https://github.com/hajimehoshi/oto)
-              
 El proyecto consiste en un reproductor de mp3 con acceso a una base de datos que
 incluye la información encontrada en las etiquetas ID3v2.4 en cada mp3. La base
 de datos está gestionada con SQLite, e incluye un lenguaje amigable para llevar
 a cabo las búsquedas sin tener que utilizar el lenguaje de SQL.
+
+## Lenguaje utilizado
+* go version go1.11 linux/amd64
+
+## Dependencias
+* Interfaz gráfica: [gotk3](https://github.com/gotk3/gotk3)
+* Decodificador mp3: [go-mp3](https://github.com/hajimehoshi/go-mp3)
+* Reproductor mp3: [oto](https://github.com/hajimehoshi/oto)
+* Controlador sqlite: [go-sqlite3](https://github.com/mattn/go-sqlite3)
+* Administrador sql: [dotsql](https://github.com/gchaincl/dotsql)
+* Manejo de ID3v2: [id3v2](https://github.com/bogem/id3v2)
+              
+## Instalación
 
 Antes de compilar, gotk3 debe estar instalado en el GOPATH, en la ruta
 src/github.com/gotk3/gotk3.   Para instalarlo, basta utilizar el comando
