@@ -1,5 +1,9 @@
 package model
 
+import (
+    "strings"
+)
+
 /**
  * Una rola representa una canción lista con información suficente para ser
  * ingresada a la base de datos.   La información mínima que contiene es else {
@@ -15,6 +19,7 @@ type Rola struct {
     year   int
     genre  string
     path   string
+    id     int64
 }
 
 func NewRola() *Rola {
@@ -27,6 +32,7 @@ func NewRola() *Rola {
         year:   2018,
         genre:  initial,
         path:   initial,
+        id:     0,
     }
 }
 
@@ -58,16 +64,20 @@ func (rola *Rola) Path() string {
     return rola.path
 }
 
+func (rola *Rola) ID() int64 {
+    return rola.id
+}
+
 func (rola *Rola) SetArtist(artist string) {
-    rola.artist = artist
+    rola.artist = strings.TrimSpace(artist)
 }
 
 func (rola *Rola) SetTitle(title string) {
-    rola.title = title
+    rola.title = strings.TrimSpace(title)
 }
 
 func (rola *Rola) SetAlbum(album string) {
-    rola.album = album
+    rola.album = strings.TrimSpace(album)
 }
 
 func (rola *Rola) SetTrack(track int) {
@@ -79,9 +89,13 @@ func (rola *Rola) SetYear(year int) {
 }
 
 func (rola *Rola) SetGenre(genre string) {
-    rola.genre = genre
+    rola.genre = strings.TrimSpace(genre)
 }
 
 func (rola *Rola) SetPath(path string) {
-    rola.path = path
+    rola.path = strings.TrimSpace(path)
+}
+
+func (rola *Rola) SetID(id int64) {
+    rola.id = id
 }

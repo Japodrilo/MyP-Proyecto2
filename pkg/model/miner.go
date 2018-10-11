@@ -8,6 +8,7 @@ import (
     "path/filepath"
     "strconv"
     "strings"
+    "unicode"
 
     "github.com/bogem/id3v2"
 )
@@ -19,19 +20,15 @@ import (
  * into a channel for external use.
  */
 type Miner struct {
-    paths []string
-    ore   chan *Rola
+    paths     []string
+    ore       chan *Rola
+    TrackList chan *Rola
 }
 
 func NewMiner() *Miner {
     return &Miner{
         paths: make([]string, 0),
-        ore: make(chan *Rola),
     }
-}
-
-func (miner *Miner) Ore() chan *Rola {
-    return miner.ore
 }
 
 func (miner *Miner) Traverse() {
@@ -59,10 +56,11 @@ func (miner *Miner) Traverse() {
 
 
 func (miner *Miner) Extract() {
+    miner.ore = make(chan *Rola)
     for _, path := range miner.paths {
         tag, err := id3v2.Open(path, id3v2.Options{Parse: true})
 	    if err != nil {
- 		    log.Fatal("error while opening mp3 file: ", err)
+ 		    log.Fatal("error while opening mp3 file: ", path + " ", err)
  	    }
 	    defer tag.Close()
 
@@ -77,20 +75,34 @@ func (miner *Miner) Extract() {
             rola.SetAlbum(tag.Album())
         }
         if tag.GetTextFrame("TRCK").Text != "" {
-            track, err := strconv.Atoi(tag.GetTextFrame("TRCK").Text)
-            if err != nil {
-                fmt.Println(err)
-                log.Fatal("error while trying to cast track number into int: ", err)
+            trackString := tag.GetTextFrame("TRCK").Text
+            f := func(c rune) bool {
+                return !unicode.IsNumber(c)
             }
-            rola.SetTrack(track)
+            fields := strings.FieldsFunc(trackString, f)
+            if len(fields) > 0 {
+                track, err := strconv.Atoi(fields[0])
+                if err != nil {
+                    fmt.Println(err)
+                    log.Fatal("error while trying to cast track number into int: ", err)
+                }
+                rola.SetTrack(track)
+            }
         }
         if tag.Year() != "" {
-            year, err := strconv.Atoi(tag.Year())
-            if err != nil {
-                fmt.Println(err)
-                log.Fatal("error while trying to cast year into int: ", err)
+            yearString := tag.Year()
+            f := func(c rune) bool {
+                return !unicode.IsNumber(c)
             }
-            rola.SetYear(year)
+            fields := strings.FieldsFunc(yearString, f)
+            if len(fields) > 0 {
+                year, err := strconv.Atoi(fields[0])
+                if err != nil {
+                    fmt.Println(err)
+                    log.Fatal("error while trying to cast year into int: ", err)
+                }
+                rola.SetYear(year)
+            }
         }
         if tag.Genre() != "" {
             rola.SetGenre(tag.Genre())
@@ -99,4 +111,18 @@ func (miner *Miner) Extract() {
         miner.ore <- rola
     }
     close(miner.ore)
+}
+
+func (miner *Miner) Populate(database *Database) {
+    miner.TrackList = make(chan *Rola)
+    for rola := range miner.ore {
+        idperformer := database.AddPerformer(rola)
+        idalbum := database.AddAlbum(rola)
+        id := database.AddRola(rola, idperformer, idalbum)
+        if id > 0 {
+            rola.SetID(id)
+            miner.TrackList <- rola
+        }
+    }
+    close(miner.TrackList)
 }
