@@ -58,23 +58,11 @@ func SetupBox() *gtk.Box {
 	return box
 }
 
-func SetupToolButton(iconName string) *gtk.ToolButton {
-    image,err := gtk.ImageNewFromIconName(iconName, gtk.ICON_SIZE_BUTTON)
-    if err != nil {
-        log.Fatal("Unable to create image:", err)
-    }
-	btn, err := gtk.ToolButtonNew(image, "")
-	if err != nil {
-		log.Fatal("Unable to create button:", err)
-	}
-	return btn
-}
-
-//func SetupButtonClick(label string, onClick func()) *gtk.Button {
-//	btn := SetupButton(label)
-//	btn.Connect("clicked", onClick)
-//	return btn
-//}
+// func SetupButtonClick(label string, onClick func()) *gtk.Button {
+// 	btn := SetupButton(label)
+// 	btn.Connect("clicked", onClick)
+// 	return btn
+// }
 
 func SetupComboBoxText() *gtk.ComboBoxText {
 	cb, err := gtk.ComboBoxTextNew()
@@ -156,6 +144,26 @@ func SetupToolbar() *gtk.Toolbar {
 		log.Fatal("unable to create toolbar:", err)
 	}
 	return tb
+}
+
+func SetupToolButtonIcon(iconName string) *gtk.ToolButton {
+    image,err := gtk.ImageNewFromIconName(iconName, gtk.ICON_SIZE_BUTTON)
+    if err != nil {
+        log.Fatal("Unable to create image:", err)
+    }
+	btn, err := gtk.ToolButtonNew(image, "")
+	if err != nil {
+		log.Fatal("Unable to create button:", err)
+	}
+	return btn
+}
+
+func SetupToolButtonLabel(text string) *gtk.ToolButton {
+	btn, err := gtk.ToolButtonNew(nil, text)
+	if err != nil {
+		log.Fatal("Unable to create button:", err)
+	}
+	return btn
 }
 
 func SetupWindow(title string) *gtk.Window {

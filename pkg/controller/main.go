@@ -79,7 +79,7 @@ func NewPrincipal() *Principal {
     })
 
     mainWindow.Buttons["edit"].Connect("clicked", func() {
-        sel.UnselectAll()
+        view.NewEditPerformer()
     })
 
     mainWindow.SearchEntry.Connect("activate", func() {
@@ -114,26 +114,17 @@ type SongInfo struct {
 
 // Handler of "activate" signal of TreeView's selection
 func (principal *Principal) SelectionChanged(s *gtk.TreeSelection) {
-	rows := s.GetSelectedRows(principal.treeview.Filter)
-	items := make([]string, 0, rows.Length())
-
-    if rows == nil {
+	items := make([]string, 0)
+    _, iter, ok := s.GetSelected()
+    if !ok {
         principal.defaultImage("Title", "Artist", "Album")
         return
     }
-
-	for l := rows; l != nil; l = l.Next() {
-		path := l.Data().(*gtk.TreePath)
-		iter, _ := principal.treeview.ListStore.GetIter(path)
-        cell, _ := principal.treeview.ListStore.GetValue(iter, 5)
-        vis, _ := cell.GoValue()
-        fmt.Println(vis)
-        for i := 0; i < 5; i++ {
-            cell, _ := principal.treeview.ListStore.GetValue(iter, i)
-		    str, _ := cell.GetString()
-		    items = append(items, str)
-        }
-	}
+    for i := 0; i < 5; i++ {
+        cell, _ := principal.treeview.Filter.GetValue(iter, i)
+		str, _ := cell.GetString()
+		items = append(items, str)
+    }
     for i := 0; i < 4; i++ {
         if i < 3 {
             fmt.Print(items[i] + " - ")
