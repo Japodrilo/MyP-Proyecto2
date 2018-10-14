@@ -70,118 +70,37 @@ func (database *Database) LoadDB() {
     }
 }
 
-func (database *Database) PerformerExists(performerName string) int64 {
-    var id int64
+func (database *Database) PrepareStatement(statement string) (*sql.Tx, *sql.Stmt) {
     tx, err := database.Database.Begin()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("could not begin transaction: ", err)
 	}
-
-	stmt, err := tx.Prepare("SELECT id_performer FROM performers WHERE performers.name = ?")
+	stmt, err := tx.Prepare(statement)
 	if err != nil {
-		log.Fatal("could not prepare query: ", err)
+		log.Fatal("could not prepare statement: ", err)
 	}
-    defer stmt.Close()
-
-    rows, err := stmt.Query(performerName)
-    if err != nil {
-        log.Fatal(err)
-    }
-    defer rows.Close()
-    for rows.Next() {
-        err = rows.Scan(&id)
-        if err != nil {
-            log.Fatal(err)
-        }
-    }
-    err = rows.Err()
-    if err != nil {
-        log.Fatal(err)
-    }
-    tx.Commit()
-    return id
+    return tx, stmt
 }
 
-func (database *Database) AddPerformer(rola *Rola) int64 {
-    idp := database.PerformerExists(rola.Artist())
-    if idp > 0 {
-        return idp
-    }
-
-    tx, err := database.Database.Begin()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	stmt, err := tx.Prepare("INSERT INTO performers(id_type, name) " +
-                            "SELECT ?, ? " +
-                            "WHERE NOT EXISTS(SELECT 1 FROM performers WHERE name = ?)")
-	if err != nil {
-		log.Fatal("could not prepare insert: ", err)
-	}
-    defer stmt.Close()
-
-    id, err := stmt.Exec(2, strings.TrimSpace(rola.Artist()), rola.Artist())
-	if err != nil {
-		log.Fatal(err)
-	}
-    tx.Commit()
-    lastId, err := id.LastInsertId()
+func (database *Database) PreparedQuery(statement string, args ...interface{}) (*sql.Tx, *sql.Stmt, *sql.Rows) {
+    tx, stmt := database.PrepareStatement(statement)
+    rows, err := stmt.Query(args...)
     if err != nil {
-        log.Fatal("could not retrieve the last insert ID:", err)
+        log.Fatal("could not performe query: ", err )
     }
-    return lastId
-}
-
-func (database *Database) AlbumExists(albumPath string) int64 {
-    var id int64
-    tx, err := database.Database.Begin()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	stmt, err := tx.Prepare("SELECT id_album FROM albums WHERE albums.path = ?")
-	if err != nil {
-		log.Fatal("could not prepare insert: ", err)
-	}
-    defer stmt.Close()
-
-    rows, err := stmt.Query(albumPath)
-    if err != nil {
-        log.Fatal(err)
-    }
-    defer rows.Close()
-    for rows.Next() {
-        err = rows.Scan(&id)
-        if err != nil {
-            log.Fatal(err)
-        }
-    }
-    err = rows.Err()
-    if err != nil {
-        log.Fatal(err)
-    }
-    tx.Commit()
-    return id
+    return tx, stmt, rows
 }
 
 func (database *Database) AddAlbum(rola *Rola) int64 {
-    idalbum := database.AlbumExists(filepath.Dir(rola.Path()))
+    idalbum := database.ExistsAlbum(filepath.Dir(rola.Path()))
     if idalbum > 0 {
         return idalbum
     }
 
-    tx, err := database.Database.Begin()
-	if err != nil {
-		log.Fatal(err)
-	}
+    stmtStr := "INSERT INTO albums (path, name, year) SELECT ?, ?, ? " +
+               "WHERE NOT EXISTS(SELECT 1 FROM albums WHERE path = ?)"
 
-	stmt, err := tx.Prepare("INSERT INTO albums (path, name, year) " +
-                            "SELECT ?, ?, ? " +
-                            "WHERE NOT EXISTS(SELECT 1 FROM albums WHERE path = ?)")
-	if err != nil {
-		log.Fatal("could not prepare query: ", err)
-	}
+    tx, stmt := database.PrepareStatement(stmtStr)
     defer stmt.Close()
 
     id, err := stmt.Exec(filepath.Dir(rola.Path()), rola.Album(), rola.Year(), filepath.Dir(rola.Path()))
@@ -196,17 +115,72 @@ func (database *Database) AddAlbum(rola *Rola) int64 {
     return lastId
 }
 
-func (database *Database) AddRola(rola *Rola, idperformer, idalbum int64) int64 {
-    tx, err := database.Database.Begin()
+func (database *Database) AddGroup(groupName, start, end string) {
+    stmtStr := "INSERT INTO groups (" +
+               " name, " +
+               " start_date, " +
+               " end_date) "  +
+               "SELECT ?, ?, ?"
+
+    tx, stmt := database.PrepareStatement(stmtStr)
+    defer stmt.Close()
+
+    _, err := stmt.Exec(groupName, start, end)
 	if err != nil {
 		log.Fatal(err)
 	}
-	stmt, err := tx.Prepare("INSERT INTO rolas (id_performer, id_album, path, title, track, year, genre) " +
-                            "SELECT ?, ?, ?, ?, ?, ?, ? " +
-                            "WHERE NOT EXISTS(SELECT 1 FROM rolas WHERE title = ? AND id_performer = ? AND id_album = ? AND genre = ?)")
+    tx.Commit()
+}
+
+func (database *Database) AddPerformer(rola *Rola) int64 {
+    idp := database.ExistsPerformer(rola.Artist())
+    if idp > 0 {
+        return idp
+    }
+
+    stmtStr := "INSERT INTO performers(id_type, name) SELECT ?, ? " +
+               "WHERE NOT EXISTS(SELECT 1 FROM performers WHERE name = ?)"
+
+    tx, stmt := database.PrepareStatement(stmtStr)
+    defer stmt.Close()
+
+    id, err := stmt.Exec(2, strings.TrimSpace(rola.Artist()), rola.Artist())
 	if err != nil {
-		log.Fatal("could not prepare insert: ", err)
+		log.Fatal(err)
 	}
+    tx.Commit()
+    lastId, err := id.LastInsertId()
+    if err != nil {
+        log.Fatal("could not retrieve the last insert ID:", err)
+    }
+    return lastId
+}
+
+func (database *Database) AddPerson(stageName, realName, birth, death string) {
+    stmtStr := "INSERT INTO persons (" +
+               " stage_name, " +
+               " real_name, " +
+               " birth_date, " +
+               " death_date) "  +
+               "SELECT ?, ?, ?, ?"
+
+    tx, stmt := database.PrepareStatement(stmtStr)
+    defer stmt.Close()
+
+    _, err := stmt.Exec(stageName, realName, birth, death)
+	if err != nil {
+		log.Fatal(err)
+	}
+    tx.Commit()
+}
+
+func (database *Database) AddRola(rola *Rola, idperformer, idalbum int64) int64 {
+    stmtStr := "INSERT INTO rolas (id_performer, id_album, path, title, " +
+               "track, year, genre) SELECT ?, ?, ?, ?, ?, ?, ? WHERE NOT " +
+               "EXISTS(SELECT 1 FROM rolas WHERE title = ? " +
+               "AND id_performer = ? AND id_album = ? AND genre = ?)"
+
+    tx, stmt := database.PrepareStatement(stmtStr)
     defer stmt.Close()
 
     result, err := stmt.Exec(idperformer, idalbum, rola.Path(), rola.Title(), rola.Track(), rola.Year(), rola.Genre(), rola.Title(), idperformer, idalbum, rola.Genre())
@@ -227,6 +201,263 @@ func (database *Database) AddRola(rola *Rola, idperformer, idalbum int64) int64 
     }
     return -1
 }
+
+func (database *Database) ExistsAlbum(albumPath string) int64 {
+    stmtStr := "SELECT id_album FROM albums WHERE albums.path = ? LIMIT 1"
+    tx, stmt, rows := database.PreparedQuery(stmtStr, albumPath)
+    defer stmt.Close()
+    defer rows.Close()
+
+    var id int64
+    for rows.Next() {
+        err := rows.Scan(&id)
+        if err != nil {
+            log.Fatal(err)
+        }
+    }
+    err := rows.Err()
+    if err != nil {
+        log.Fatal(err)
+    }
+    tx.Commit()
+    return id
+}
+
+func (database *Database) ExistsGroup(groupName string) int64 {
+    stmtStr := "SELECT " +
+               " id_group " +
+               "FROM " +
+               " groups " +
+               "WHERE " +
+               " groups.name = ? " +
+               "LIMIT 1"
+    tx, stmt, rows := database.PreparedQuery(stmtStr, groupName)
+    defer stmt.Close()
+    defer rows.Close()
+
+    var id int64
+    for rows.Next() {
+        err := rows.Scan(&id)
+        if err != nil {
+            log.Fatal(err)
+        }
+    }
+    err := rows.Err()
+    if err != nil {
+        log.Fatal(err)
+    }
+    tx.Commit()
+    return id
+}
+
+func (database *Database) ExistsPerformer(performerName string) int64 {
+    stmtStr := "SELECT id_performer FROM performers WHERE performers.name = ? LIMIT 1"
+    tx, stmt, rows := database.PreparedQuery(stmtStr, performerName)
+    defer stmt.Close()
+    defer rows.Close()
+
+    var id int64
+    for rows.Next() {
+        err := rows.Scan(&id)
+        if err != nil {
+            log.Fatal(err)
+        }
+    }
+    err := rows.Err()
+    if err != nil {
+        log.Fatal(err)
+    }
+    tx.Commit()
+    return id
+}
+
+func (database *Database) ExistsPerson(stageName, realName string) int64 {
+    stmtStr := "SELECT " +
+               " id_person " +
+               "FROM " +
+               " persons " +
+               "WHERE " +
+               "persons.stage_name = ? OR persons.real_name = ? " +
+               "LIMIT 1"
+    tx, stmt, rows := database.PreparedQuery(stmtStr, stageName, realName)
+    defer stmt.Close()
+    defer rows.Close()
+
+    var id int64
+    for rows.Next() {
+        err := rows.Scan(&id)
+        if err != nil {
+            log.Fatal(err)
+        }
+    }
+    err := rows.Err()
+    if err != nil {
+        log.Fatal(err)
+    }
+    tx.Commit()
+    return id
+}
+
+func (database *Database) QueryGroup(groupID int64) (string, string, string){
+    stmtStr := "SELECT " +
+               " name, " +
+               " start_date, " +
+               " end_date " +
+               "FROM " +
+               " groups " +
+               "WHERE " +
+               " groups.id_group = ?"
+
+    tx, stmt := database.PrepareStatement(stmtStr)
+    defer stmt.Close()
+
+    rows, err := stmt.Query(groupID)
+    if err != nil {
+        log.Fatal("could not execute query: ", err)
+    }
+    defer rows.Close()
+
+    var name string
+    var start string
+    var end string
+    for rows.Next() {
+        err = rows.Scan(&name, &start, &end)
+        if err != nil {
+            log.Fatal(err)
+        }
+    }
+    err = rows.Err()
+    if err != nil {
+        log.Fatal(err)
+    }
+    tx.Commit()
+    return name, start, end
+}
+
+func (database *Database) QueryPerformerType(name string) (int64, int) {
+    stmtStr := "SELECT " +
+               " id_performer, " +
+               " performers.id_type " +
+               "FROM " +
+               " performers " +
+               "INNER JOIN types ON types.id_type = performers.id_type " +
+               "WHERE " +
+               " performers.name = ?"
+
+    tx, stmt := database.PrepareStatement(stmtStr)
+    defer stmt.Close()
+
+    rows, err := stmt.Query(name)
+    if err != nil {
+        log.Fatal("could not execute query: ", err)
+    }
+    defer rows.Close()
+
+    var performerID int64
+    var performerType int
+    for rows.Next() {
+        err = rows.Scan(&performerID, &performerType)
+        if err != nil {
+            log.Fatal(err)
+        }
+    }
+    err = rows.Err()
+    if err != nil {
+        log.Fatal(err)
+    }
+    tx.Commit()
+    return performerID, performerType
+}
+
+func (database *Database) QueryPerson(personID int64) (string, string, string, string){
+    stmtStr := "SELECT " +
+               " stage_name, " +
+               " real_name, " +
+               " birth_date, " +
+               " death_date " +
+               "FROM " +
+               " persons " +
+               "WHERE " +
+               " persons.id_person = ?"
+
+    tx, stmt := database.PrepareStatement(stmtStr)
+    defer stmt.Close()
+
+    rows, err := stmt.Query(personID)
+    if err != nil {
+        log.Fatal("could not execute query: ", err)
+    }
+    defer rows.Close()
+
+    var stageName string
+    var realName string
+    var birth string
+    var death string
+    for rows.Next() {
+        err = rows.Scan(&stageName, &realName, &birth, &death)
+        if err != nil {
+            log.Fatal(err)
+        }
+    }
+    err = rows.Err()
+    if err != nil {
+        log.Fatal(err)
+    }
+    tx.Commit()
+    return stageName, realName, birth, death
+}
+
+func (database *Database) UpdateGroup(name, start, end string, groupID int64) {
+    stmtStr := "UPDATE groups " +
+               "SET name = ?, " +
+               "    start_date = ?, " +
+               "    end_date = ? " +
+               "WHERE id_group = ?"
+
+    tx, stmt := database.PrepareStatement(stmtStr)
+    defer stmt.Close()
+
+    _, err := stmt.Exec(name, start, end, groupID)
+	if err != nil {
+		log.Fatal(err)
+	}
+    tx.Commit()
+}
+
+func (database *Database) UpdatePerformerType(performerID int64, performerType int) {
+    stmtStr := "UPDATE performers " +
+               "SET id_type = ? " +
+               "WHERE id_performer = ?"
+
+    tx, stmt := database.PrepareStatement(stmtStr)
+    defer stmt.Close()
+
+    _, err := stmt.Exec(performerType, performerID)
+	if err != nil {
+		log.Fatal("could not execute update: ", err)
+	}
+
+    tx.Commit()
+}
+
+func (database *Database) UpdatePerson(stageName, realName, birth, death string, personID int64) {
+    stmtStr := "UPDATE persons " +
+               "SET stage_name = ?, " +
+               "    real_name = ?, " +
+               "    birth_date = ?, " +
+               "    death_date = ? " +
+               "WHERE id_person = ?"
+
+    tx, stmt := database.PrepareStatement(stmtStr)
+    defer stmt.Close()
+
+    _, err := stmt.Exec(stageName, realName, birth, death, personID)
+	if err != nil {
+		log.Fatal(err)
+	}
+    tx.Commit()
+}
+
 
 func (database *Database) Display() {
     rows, err := database.Database.Query("SELECT id_performer, name FROM performers")

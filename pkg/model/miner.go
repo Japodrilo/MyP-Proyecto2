@@ -6,11 +6,9 @@ import (
     "os"
     "os/user"
     "path/filepath"
-    "strconv"
     "strings"
-    "unicode"
 
-    "github.com/bogem/id3v2"
+    "github.com/dhowden/tag"
 )
 
 /**
@@ -57,55 +55,36 @@ func (miner *Miner) Traverse() {
 
 func (miner *Miner) Extract() {
     miner.ore = make(chan *Rola)
+    genreConverter := GetGenre()
     for _, path := range miner.paths {
-        tag, err := id3v2.Open(path, id3v2.Options{Parse: true})
-	    if err != nil {
- 		    log.Fatal("error while opening mp3 file: ", path + " ", err)
- 	    }
-	    defer tag.Close()
+        file, err := os.Open(path)
+        if err != nil {
+            log.Fatal("could not open file: ", path, err)
+        }
+        metadata, err := tag.ReadFrom(file)
+        if err != nil {
+            log.Fatal("could not read the tag:", err)
+        }
 
         rola := NewRola()
-        if tag.Artist() != "" {
-            rola.SetArtist(tag.Artist())
+        if metadata.Artist() != "" {
+            rola.SetArtist(metadata.Artist())
         }
-        if tag.Title() != "" {
-            rola.SetTitle(tag.Title())
+        if metadata.Title() != "" {
+            rola.SetTitle(metadata.Title())
         }
-        if tag.Album() != "" {
-            rola.SetAlbum(tag.Album())
+        if metadata.Album() != "" {
+            rola.SetAlbum(metadata.Album())
         }
-        if tag.GetTextFrame("TRCK").Text != "" {
-            trackString := tag.GetTextFrame("TRCK").Text
-            f := func(c rune) bool {
-                return !unicode.IsNumber(c)
-            }
-            fields := strings.FieldsFunc(trackString, f)
-            if len(fields) > 0 {
-                track, err := strconv.Atoi(fields[0])
-                if err != nil {
-                    fmt.Println(err)
-                    log.Fatal("error while trying to cast track number into int: ", err)
-                }
-                rola.SetTrack(track)
-            }
+        track, _ := metadata.Track()
+        if track != 0 {
+            rola.SetTrack(track)
         }
-        if tag.Year() != "" {
-            yearString := tag.Year()
-            f := func(c rune) bool {
-                return !unicode.IsNumber(c)
-            }
-            fields := strings.FieldsFunc(yearString, f)
-            if len(fields) > 0 {
-                year, err := strconv.Atoi(fields[0])
-                if err != nil {
-                    fmt.Println(err)
-                    log.Fatal("error while trying to cast year into int: ", err)
-                }
-                rola.SetYear(year)
-            }
+        if metadata.Year() != 0 {
+            rola.SetYear(metadata.Year())
         }
-        if tag.Genre() != "" {
-            rola.SetGenre(tag.Genre())
+        if metadata.Genre() != "" {
+            rola.SetGenre(genreConverter.Get(metadata.Genre()))
         }
         rola.SetPath(path)
         miner.ore <- rola

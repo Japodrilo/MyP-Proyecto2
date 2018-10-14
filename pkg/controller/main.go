@@ -14,7 +14,7 @@ import(
     "github.com/Japodrilo/MyP-Proyecto2/pkg/model"
 	"github.com/Japodrilo/MyP-Proyecto2/pkg/view"
 
-    "github.com/bogem/id3v2"
+    "github.com/dhowden/tag"
     "github.com/gotk3/gotk3/gdk"
 	"github.com/gotk3/gotk3/gtk"
 	"github.com/gotk3/gotk3/glib"
@@ -66,20 +66,21 @@ func NewPrincipal() *Principal {
 
     sel.Connect("changed", func() {principal.SelectionChanged(sel)})
 
+    treeview.TreeView.TreeView.Connect("row-activated", func() {principal.RowActivated()})
+
     mainWindow.Buttons["populate"].Connect("clicked", func() {
         principal.treeSel.UnselectAll()
         principal.treeSel.SetMode(gtk.SELECTION_NONE)
-        //glib.IdleAdd(principal.treeview.ListStore.Clear, )
-        principal.database.Database.Close()
         principal.database, _ = model.NewDatabase()
         principal.database.CreateDB()
+        principal.database.LoadDB()
         mainWindow.Buttons["populate"].SetSensitive(false)
         glib.IdleAdd(principal.treeview.ListStore.Clear, )
         principal.Populate()
     })
 
     mainWindow.Buttons["edit"].Connect("clicked", func() {
-        view.NewEditPerformer()
+        principal.RowActivated()
     })
 
     mainWindow.SearchEntry.Connect("activate", func() {
@@ -112,18 +113,25 @@ type SongInfo struct {
     album string
 }
 
-// Handler of "activate" signal of TreeView's selection
-func (principal *Principal) SelectionChanged(s *gtk.TreeSelection) {
-	items := make([]string, 0)
-    _, iter, ok := s.GetSelected()
+func (principal *Principal) rowTextValues() []string {
+    values := make([]string, 0)
+    _, iter, ok := principal.treeSel.GetSelected()
     if !ok {
-        principal.defaultImage("Title", "Artist", "Album")
-        return
+        return values
     }
     for i := 0; i < 5; i++ {
         cell, _ := principal.treeview.Filter.GetValue(iter, i)
 		str, _ := cell.GetString()
-		items = append(items, str)
+		values = append(values, str)
+    }
+    return values
+}
+
+// Handler of "activate" signal of TreeView's selection
+func (principal *Principal) SelectionChanged(s *gtk.TreeSelection) {
+	items := principal.rowTextValues()
+    if len(items) == 0 {
+        return
     }
     for i := 0; i < 4; i++ {
         if i < 3 {
@@ -132,21 +140,21 @@ func (principal *Principal) SelectionChanged(s *gtk.TreeSelection) {
             fmt.Println(items[i])
         }
     }
-    tag, err := id3v2.Open(items[4], id3v2.Options{Parse: true})
+    file, err := os.Open(items[4])
     if err != nil {
-        log.Fatal("error while opening mp3 file: ", items[4] + " ", err)
+        log.Fatal("could not open file:", err)
     }
-    defer tag.Close()
-    pictures := tag.GetFrames(tag.CommonID("Attached picture"))
-    if len(pictures) == 0 {
+    metadata, err := tag.ReadFrom(file)
+    if err != nil {
+        log.Fatal("error while reading the tags in file: ", items[4] + " ", err)
+    }
+    picture := metadata.Picture()
+    if picture == nil {
         principal.defaultImage(items[0], items[1], items[2])
     } else {
-        pic, ok := pictures[0].(id3v2.PictureFrame)
-        if !ok {
-                log.Fatal("could not assert picture frame")
-            }
+        pic := picture.Data
         file, _ := os.Create("./image.jpg")
-        imageReader := bytes.NewReader(pic.Picture)
+        imageReader := bytes.NewReader(pic)
         loadedImage, _, _ := image.Decode(imageReader)
         if loadedImage != nil {
             err = jpeg.Encode(file, loadedImage, nil)
@@ -156,6 +164,88 @@ func (principal *Principal) SelectionChanged(s *gtk.TreeSelection) {
         } else {
             principal.defaultImage(items[0], items[1], items[2])
         }
+    }
+}
+
+func (principal *Principal) RowActivated() {
+    rowValues := principal.rowTextValues()
+    if len(rowValues) == 0 {
+        return
+    }
+    performerID, performerType := principal.database.QueryPerformerType(rowValues[1])
+    name := principal.rowTextValues()[1]
+    switch performerType {
+    case 0:
+        personPopUp := view.EditPersonWindow()
+        personID := principal.database.ExistsPerson(name, "ñ")
+        stageName, realName, birth, death := principal.database.QueryPerson(personID)
+        personPopUp.PersonContent.StageNameE.SetText(stageName)
+        personPopUp.PersonContent.RealNameE.SetText(realName)
+        personPopUp.PersonContent.BirthE.SetText(birth)
+        personPopUp.PersonContent.DeathE.SetText(death)
+        personPopUp.SaveB.Connect("clicked", func() {
+            principal.savePersonContent(personPopUp.PersonContent)
+            personPopUp.Win.Close()
+        })
+    case 1:
+        groupPopUp := view.EditGroupWindow()
+        groupID := principal.database.ExistsGroup(name)
+        groupName, start, end := principal.database.QueryGroup(groupID)
+        groupPopUp.GroupContent.GroupNameE.SetText(groupName)
+        groupPopUp.GroupContent.StartE.SetText(start)
+        groupPopUp.GroupContent.EndE.SetText(end)
+        groupPopUp.SaveB.Connect("clicked", func() {
+            principal.saveGroupContent(groupPopUp.GroupContent)
+            groupPopUp.Win.Close()
+        })
+    case 2:
+        performerPopUp := view.EditPerformerWindow()
+        performerPopUp.PersonContent.StageNameE.SetText(name)
+        performerPopUp.GroupContent.GroupNameE.SetText(name)
+        performerPopUp.SaveB.Connect("clicked", func() {
+            newType := performerPopUp.Notebook.GetCurrentPage()
+            principal.database.UpdatePerformerType(performerID, newType)
+            switch newType {
+            case 0:
+                principal.savePersonContent(performerPopUp.PersonContent)
+            case 1:
+                principal.saveGroupContent(performerPopUp.GroupContent)
+            }
+            performerPopUp.Win.Close()
+        })
+    }
+}
+
+func (principal *Principal) saveGroupContent(groupContent *view.GroupContent) {
+    newGroupName := view.GetTextEntry(groupContent.GroupNameE)
+    newStart := view.GetTextEntry(groupContent.StartE)
+    newEnd := view.GetTextEntry(groupContent.EndE)
+    principal.saveGroup(newGroupName, newStart, newEnd)
+}
+
+func (principal *Principal) savePersonContent(personContent *view.PersonContent) {
+    newStageName := view.GetTextEntry(personContent.StageNameE)
+    newRealName := view.GetTextEntry(personContent.RealNameE)
+    newBirth := view.GetTextEntry(personContent.BirthE)
+    newDeath := view.GetTextEntry(personContent.DeathE)
+    principal.savePerson(newStageName, newRealName, newBirth, newDeath)
+}
+
+func (principal *Principal) saveGroup(groupName, start, end string) {
+    groupID := principal.database.ExistsGroup(groupName)
+    if groupID > 0 {
+        principal.database.UpdateGroup(groupName, start, end, groupID)
+    } else {
+        principal.database.AddGroup(groupName, start, end)
+    }
+}
+
+func (principal *Principal) savePerson(stageName, realName, birth, death string) {
+    personID := principal.database.ExistsPerson(stageName, realName)
+    if personID > 0 {
+        principal.database.UpdatePerson(stageName, realName, birth, death, personID)
+    } else {
+        principal.database.AddPerson(stageName, realName, birth, death)
     }
 }
 

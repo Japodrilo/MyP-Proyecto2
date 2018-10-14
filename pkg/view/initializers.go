@@ -98,6 +98,14 @@ func SetupLabel(text string) *gtk.Label {
 	return label
 }
 
+func SetupNotebook() *gtk.Notebook {
+	nb, err := gtk.NotebookNew()
+	if err != nil {
+		log.Fatal("Unable to create notebook:", err)
+	}
+	return nb
+}
+
 func SetupPopupWindow(title string, width, height int) *gtk.Window {
 	win, err := gtk.WindowNew(gtk.WINDOW_TOPLEVEL)
 	if err != nil {
