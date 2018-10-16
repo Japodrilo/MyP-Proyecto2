@@ -60,8 +60,8 @@ func NewPrincipal() *Principal {
 
     database.LoadDB()
 
-    mainWindow.Buttons["person"].Connect("clicked", func() {
-        principal.RowActivated()
+    mainWindow.Buttons["new"].Connect("clicked", func() {
+        principal.AddNewPerformer()
     })
 
     sel.Connect("changed", func() {principal.SelectionChanged(sel)})
@@ -256,7 +256,7 @@ func (principal *Principal) EditPerformer() {
             case 0:
                 principal.saveGroupContent(groupPopUp.GroupContent)
             case 1:
-
+                principal.database.AddPersonToGroup(principal.database.AllPersons()[groupPopUp.NewMemberCBT.GetActiveText()], groupID)
             }
             groupPopUp.Win.Close()
         })
@@ -281,6 +281,21 @@ func (principal *Principal) EditPerformer() {
             performerPopUp.Win.Close()
         })
     }
+}
+
+func (principal *Principal) AddNewPerformer() {
+    performerPopUp := view.EditPerformerWindow()
+    performerPopUp.Win.SetTitle("New Performer")
+    performerPopUp.SaveB.Connect("clicked", func() {
+        page := performerPopUp.Notebook.GetCurrentPage()
+        switch page {
+        case 0:
+            principal.savePersonContent(performerPopUp.PersonContent)
+        case 1:
+            principal.saveGroupContent(performerPopUp.GroupContent)
+        }
+        performerPopUp.Win.Close()
+    })
 }
 
 
@@ -328,13 +343,11 @@ func (principal *Principal) saveRolaContent(rolaContent *view.RolaContent, rolaI
     rola.SetTrack(newTrack)
     newYear, _ := strconv.Atoi(view.GetTextEntry(rolaContent.YearE))
     rola.SetYear(newYear)
-    fmt.Println(rola.Title(), rola.Artist(), rola.Album(), rola.Genre(), rola.Track(), rola.Year(), rola.ID())
     principal.database.UpdateRola(rola)
 }
 
 func (principal *Principal) saveGroup(groupName, start, end string) {
     groupID := principal.database.ExistsGroup(groupName)
-    fmt.Println(groupID)
     if groupID > 0 {
         principal.database.UpdateGroup(groupName, start, end, groupID)
     } else {
