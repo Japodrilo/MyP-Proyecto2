@@ -96,3 +96,16 @@ func (treeview *TreeView) AllInvisible() {
     }
     sel.SetMode(gtk.SELECTION_SINGLE)
 }
+
+func (treeview *TreeView) updatePerformer(rola *model.Rola) {
+    iter := treeview.Rows[rola.ID()]
+    treeview.ListStore.SetValue(iter, 1, rola.Artist())
+}
+
+func (treeview *TreeView) updateRow(rola *model.Rola) {
+    iter := treeview.Rows[rola.ID()]
+    treeview.ListStore.SetValue(iter, 0, rola.Title())
+    treeview.ListStore.SetValue(iter, 1, rola.Artist())
+    treeview.ListStore.SetValue(iter, 2, rola.Album())
+    treeview.ListStore.SetValue(iter, 3, rola.Genre())
+}

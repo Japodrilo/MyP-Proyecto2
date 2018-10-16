@@ -12,16 +12,16 @@ type EditPerformer struct {
     Win           *gtk.Window
 }
 
-// Class that represents the edit performer menu.
-func EditPerformerWindow() *EditPerformer {
-	win := SetupPopupWindow("Edit Performer", 350, 216)
+
+func EditPerformerWindow() *EditPerformer{
+    win := SetupPopupWindow("Edit Performer", 350, 216)
     box := SetupBox()
     nb := SetupNotebook()
     tb := SetupToolbar()
     save := SetupToolButtonLabel("Save")
 
-    personContent := NewPersonContent()
     groupContent := NewGroupContent()
+    personContent := NewPersonContent()
 
     save.SetExpand(true)
     save.SetVExpand(true)
@@ -39,10 +39,10 @@ func EditPerformerWindow() *EditPerformer {
 	win.ShowAll()
 
 	return &EditPerformer{
-		GroupContent:  groupContent,
+        GroupContent:  groupContent,
         Notebook:      nb,
         PersonContent: personContent,
-		SaveB:         save,
-        Win:           win,
+        SaveB:         save,
+		Win:           win,
 	}
 }

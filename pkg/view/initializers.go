@@ -98,6 +98,24 @@ func SetupLabel(text string) *gtk.Label {
 	return label
 }
 
+func SetupListBox() *gtk.ListBox {
+	lb, err := gtk.ListBoxNew()
+	if err != nil {
+		log.Fatal("Unable to create ListBox:", err)
+	}
+	return lb
+}
+
+func SetupListBoxRowLabel(text string) *gtk.ListBoxRow {
+	lbr, err := gtk.ListBoxRowNew()
+	if err != nil {
+		log.Fatal("Unable to create List Box Row:", err)
+	}
+    label := SetupLabel(text)
+    lbr.Add(label)
+	return lbr
+}
+
 func SetupNotebook() *gtk.Notebook {
 	nb, err := gtk.NotebookNew()
 	if err != nil {

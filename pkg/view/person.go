@@ -4,13 +4,6 @@ import (
 	"github.com/gotk3/gotk3/gtk"
 )
 
-type EditPerson struct {
-    AddGroupB     *gtk.ToolButton
-    PersonContent *PersonContent
-    SaveB         *gtk.ToolButton
-    Win           *gtk.Window
-}
-
 type PersonContent struct {
     grid       *gtk.Grid
     StageNameE *gtk.Entry
@@ -58,34 +51,79 @@ func NewPersonContent() *PersonContent {
     }
 }
 
+type AddToGroup struct {
+    CurrentGroupLB *gtk.ListBox
+    grid           *gtk.Grid
+    NewGroupCBT    *gtk.ComboBoxText
+}
+
+func NewAddToGroup() *AddToGroup {
+    grid := SetupGrid(gtk.ORIENTATION_VERTICAL)
+
+	cornerNW := SetupLabel("    ")
+    currentGroupL := SetupLabel("Current Groups:")
+    currentGroupLB := SetupListBox()
+    newGroupL := SetupLabel("New Group:")
+	newGroupCBT := SetupComboBoxText()
+    cornerSE := SetupLabel("    ")
+
+    newGroupCBT.SetHExpand(true)
+    currentGroupL.SetVExpand(true)
+
+	grid.Add(cornerNW)
+	grid.Attach(currentGroupL, 1, 2, 1, 1)
+    grid.Attach(currentGroupLB, 2, 2, 1, 1)
+    grid.Attach(newGroupL, 1, 1, 1, 1)
+    grid.Attach(newGroupCBT, 2, 1, 1, 1)
+    grid.Attach(cornerSE, 3, 3, 1, 1)
+
+    return &AddToGroup{
+        CurrentGroupLB: currentGroupLB,
+        grid:           grid,
+        NewGroupCBT:    newGroupCBT,
+    }
+}
+
+type EditPerson struct {
+    CurrentGroupLB *gtk.ListBox
+    NewGroupCBT    *gtk.ComboBoxText
+    Notebook       *gtk.Notebook
+    PersonContent  *PersonContent
+    SaveB          *gtk.ToolButton
+    Win            *gtk.Window
+}
+
 func EditPersonWindow() *EditPerson{
     win := SetupPopupWindow("Edit Person", 350, 216)
     box := SetupBox()
+    nb := SetupNotebook()
     tb := SetupToolbar()
     save := SetupToolButtonLabel("Save")
-    addGroup := SetupToolButtonLabel("Add to group")
 
     personContent := NewPersonContent()
+    addToGroup := NewAddToGroup()
 
     save.SetExpand(true)
     save.SetVExpand(true)
-    addGroup.SetExpand(true)
-    addGroup.SetVExpand(true)
 
     tb.Add(save)
-    tb.Add(addGroup)
     tb.SetHExpand(true)
 
-    box.Add(personContent.grid)
+    nb.AppendPage(personContent.grid, SetupLabel("Edit Person"))
+    nb.AppendPage(addToGroup.grid, SetupLabel("Add to Group"))
+
+    box.Add(nb)
     box.Add(tb)
 
 	win.Add(box)
 	win.ShowAll()
 
 	return &EditPerson{
-        AddGroupB:     addGroup,
-        PersonContent: personContent,
-        SaveB:         save,
-		Win:           win,
+        CurrentGroupLB: addToGroup.CurrentGroupLB,
+        NewGroupCBT:    addToGroup.NewGroupCBT,
+        Notebook:       nb,
+        PersonContent:  personContent,
+        SaveB:          save,
+		Win:            win,
 	}
 }

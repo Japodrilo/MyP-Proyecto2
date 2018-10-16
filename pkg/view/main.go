@@ -38,7 +38,7 @@ func SetupMainWindow() *MainWindow {
     se := SetupSearchEntry()
     play := SetupToolButtonIcon("media-playback-start")
     edit := SetupToolButtonIcon("stock_edit")
-    search := SetupToolButtonIcon("list-add")
+    person := SetupToolButtonIcon("list-add")
     populate := SetupToolButtonIcon("reload")
     treeview := NewTreeView()
     scrwin := SetupScrolledWindow()
@@ -63,13 +63,13 @@ func SetupMainWindow() *MainWindow {
     tb.Add(populate)
     tb.Add(play)
     tb.Add(edit)
-    tb.Add(search)
+    tb.Add(person)
     tb.SetStyle(gtk.TOOLBAR_ICONS)
 
     buttons["populate"] = populate
     buttons["play"] = play
     buttons["edit"] = edit
-    buttons["search"] = search
+    buttons["person"] = person
 
     box.Add(boxtop)
     box.Add(scrwin)
