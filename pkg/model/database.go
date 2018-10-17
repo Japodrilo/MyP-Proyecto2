@@ -365,6 +365,29 @@ func (database *Database) ExistsPerson(stageName string) int64 {
     return id
 }
 
+func (database *Database) QueryCustom(stmtStr string, terms ...interface{}) []int64 {
+    result := make([]int64, 0)
+
+    tx, stmt, rows := database.PreparedQuery(stmtStr, terms...)
+    defer stmt.Close()
+    defer rows.Close()
+
+    for rows.Next() {
+        var id int64
+        err := rows.Scan(&id)
+        if err != nil {
+            log.Fatal(err)
+        }
+        result = append(result, id)
+    }
+    err := rows.Err()
+    if err != nil {
+        log.Fatal(err)
+    }
+    tx.Commit()
+    return result
+}
+
 func (database *Database) QueryGroup(groupID int64) (string, string, string){
     stmtStr := "SELECT " +
                " name, " +
@@ -633,6 +656,38 @@ func (database *Database) QueryRolaForeign(rolaID int64) (int64, int64) {
     return performerID, albumID
 }
 
+func (database *Database) QuerySimple(wildcard string) []int64 {
+    result := make([]int64, 0)
+    stmtStr := "SELECT " +
+               " rolas.id_rola " +
+               "FROM " +
+               " rolas " +
+               "INNER JOIN performers ON performers.id_performer = rolas.id_performer " +
+               "INNER JOIN albums ON albums.id_album = rolas.id_album " +
+               "WHERE " +
+               " performers.name LIKE ? OR albums.name LIKE ? OR rolas.title LIKE ? "
+
+    wildCard := "%" + strings.TrimSpace(wildcard) + "%"
+    tx, stmt, rows := database.PreparedQuery(stmtStr, wildCard, wildCard, wildCard)
+    defer stmt.Close()
+    defer rows.Close()
+
+    for rows.Next() {
+        var id int64
+        err := rows.Scan(&id)
+        if err != nil {
+            log.Fatal(err)
+        }
+        result = append(result, id)
+    }
+    err := rows.Err()
+    if err != nil {
+        log.Fatal(err)
+    }
+    tx.Commit()
+    return result
+}
+
 func (database *Database) UpdateGroup(name, start, end string, groupID int64) {
     stmtStr := "UPDATE groups " +
                "SET name = ?, " +
@@ -717,36 +772,6 @@ func (database *Database) UpdateRola(rola *Rola) {
 		log.Fatal(err)
 	}
     tx.Commit()
-
-
-
-    // performerID, albumID := database.QueryRolaForeign(rola.id)
-    //
-    // stmtStr = "UPDATE performers " +
-    //           "SET name = ? " +
-    //           "WHERE id_performer = ?"
-    //
-    // tx, stmt2 := database.PrepareStatement(stmtStr)
-    // defer stmt2.Close()
-    //
-    // _, err = stmt2.Exec(artist, performerID)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-    // tx.Commit()
-    //
-    // stmtStr = "UPDATE albums " +
-    //           "SET name = ? " +
-    //           "WHERE id_album = ?"
-    //
-    // tx, stmt3 := database.PrepareStatement(stmtStr)
-    // defer stmt3.Close()
-    //
-    // _, err = stmt3.Exec(album, albumID)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-    // tx.Commit()
 }
 
 

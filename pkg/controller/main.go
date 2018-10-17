@@ -9,7 +9,7 @@ import(
     _ "image/gif"
     "log"
     "os"
-    "strings"
+    //"strings"
     "strconv"
 
     "github.com/Japodrilo/MyP-Proyecto2/pkg/model"
@@ -85,7 +85,7 @@ func NewPrincipal() *Principal {
 
     mainWindow.SearchEntry.Connect("activate", func() {
         text := view.GetTextEntryClean(mainWindow.SearchEntry)
-        principal.SimpleSearch(text)
+        principal.SearchAction(text)
     })
 
     principal.mainWindow.Win.ShowAll()
@@ -432,46 +432,22 @@ func (principal *Principal) PopulateOnTheFly(miner *model.Miner) {
     principal.treeSel.SetMode(gtk.SELECTION_SINGLE)
 }
 
-func (principal *Principal) SimpleSearch(wildcard string) {
+func (principal *Principal) SearchAction(wildcard string) {
     principal.treeSel.UnselectAll()
     principal.treeview.AllInvisible()
-    tx, err := principal.database.Database.Begin()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	stmt, err := tx.Prepare("SELECT performers.name, albums.name, rolas.path, rolas.title, rolas.genre, rolas.id_rola FROM rolas INNER JOIN performers ON performers.id_performer = rolas.id_performer INNER JOIN albums ON albums.id_album = rolas.id_album WHERE performers.name LIKE ? OR albums.name LIKE ? OR rolas.title LIKE ?")
-	if err != nil {
-		log.Fatal("could not prepare query: ", err)
-	}
-    defer stmt.Close()
-
-    wildCard := "%" + strings.TrimSpace(wildcard) + "%"
-
-    rows, err := stmt.Query(wildCard, wildCard, wildCard)
-    if err != nil {
-        log.Fatal(err)
-    }
-    defer rows.Close()
-    for rows.Next() {
-        var performer string
-        var album string
-        var path string
-		var title string
-        var genre string
-        var id int64
-        err = rows.Scan(&performer, &album, &path, &title, &genre, &id)
-        if err != nil {
-            log.Fatal(err)
+    parser := model.GetParser()
+    stmt, queryTerms, ok := parser.Parse(wildcard)
+    if ok {
+        for _, id := range principal.database.QueryCustom(stmt, queryTerms...) {
+            iter := principal.treeview.Rows[id]
+            principal.treeview.ListStore.SetValue(iter, 5, true)
         }
-        iter := principal.treeview.Rows[id]
-        principal.treeview.ListStore.SetValue(iter, 5, true)
+    } else {
+        for _, id := range principal.database.QuerySimple(stmt) {
+            iter := principal.treeview.Rows[id]
+            principal.treeview.ListStore.SetValue(iter, 5, true)
+        }
     }
-    err = rows.Err()
-    if err != nil {
-        log.Fatal(err)
-    }
-    tx.Commit()
 }
 
 func (principal *Principal) PopulateFromExistingDB(database *model.Database) {
