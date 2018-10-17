@@ -13,7 +13,6 @@ type MainWindow struct {
     Buttons        map[string]*gtk.ToolButton
     Grid           *gtk.Grid
     ScrolledWindow *gtk.ScrolledWindow
-    SearchBar      *gtk.SearchBar
     SearchEntry    *gtk.SearchEntry
     SongInfo       []*gtk.Label
     TreeView       *TreeView
@@ -28,61 +27,70 @@ func SetupMainWindow() *MainWindow {
     buttons := make(map[string]*gtk.ToolButton)
 	win := SetupWindow("Rolas")
 	box := SetupBox()
-    boxtop := SetupBox()
+    gridtop := SetupGrid(gtk.ORIENTATION_HORIZONTAL)
     boxinfo:= SetupBox()
     albumLabel := SetupLabel("\tAlbum")
     artistLabel := SetupLabel("\tArtist\n\n\n")
     titleLabel := SetupLabel("\n\n\n\tTitle\n\n\n")
     tb := SetupToolbar()
-    sb := SetupSearchBar()
+    tb2 := SetupToolbar()
     se := SetupSearchEntry()
-    play := SetupToolButtonIcon("media-playback-start")
-    edit := SetupToolButtonIcon("stock_edit")
-    new := SetupToolButtonIcon("list-add")
-    populate := SetupToolButtonIcon("reload")
+    play := SetupToolButtonIcon("gtk-media-play-ltr")
+    edit := SetupToolButtonIcon("gtk-edit")
+    performers := SetupToolButtonIcon("gtk-open")
+    new := SetupToolButtonIcon("gtk-new")
+    populate := SetupToolButtonIcon("gtk-refresh")
+    about := SetupToolButtonIcon("gtk-info")
     treeview := NewTreeView()
     scrwin := SetupScrolledWindow()
 	grid := SetupGrid(gtk.ORIENTATION_HORIZONTAL)
+    space1 := SetupLabel("                       ")
+    space2 := SetupLabel("                       ")
+    space3 := SetupLabel("                       ")
 
     pix, _ := gdk.PixbufNewFromFileAtScale("./noimage.png", 250, 250, true)
     defaultImage, _ := gtk.ImageNewFromPixbuf(pix)
 
-    boxtop.SetOrientation(gtk.ORIENTATION_HORIZONTAL)
-    boxtop.Add(tb)
-    boxtop.Add(sb)
+    se.SetHExpand(true)
+
+    gridtop.Add(tb)
+    gridtop.Add(space1)
+    gridtop.Add(space2)
+    gridtop.Attach(se, 2, 0, 3, 1)
+    gridtop.Add(space3)
+    gridtop.Add(tb2)
 
     boxinfo.Add(titleLabel)
     boxinfo.Add(artistLabel)
     boxinfo.Add(albumLabel)
 
-    sb.SetSearchMode(true)
-    sb.Add(se)
-    sb.ConnectEntry(se)
-    sb.SetShowCloseButton(false)
-
     tb.Add(populate)
     tb.Add(play)
     tb.Add(edit)
+    tb.Add(performers)
     tb.Add(new)
     tb.SetStyle(gtk.TOOLBAR_ICONS)
+
+    tb2.Add(about)
 
     buttons["populate"] = populate
     buttons["play"] = play
     buttons["edit"] = edit
+    buttons["performers"] = performers
     buttons["new"] = new
+    buttons["about"] = about
 
-    box.Add(boxtop)
+    box.Add(gridtop)
     box.Add(scrwin)
     box.Add(grid)
-    //grid.SetVExpand(true)
 
     grid.Attach(defaultImage, 0, 0, 1, 1)
     grid.Attach(boxinfo, 2, 0, 1, 1)
 
     scrwin.SetVExpand(true)
     scrwin.Add(treeview.TreeView)
-	//box.Add(grid)
 
+    win.SetIconName("gtk-media-record")
 	win.Add(box)
 	win.ShowAll()
 
@@ -92,7 +100,6 @@ func SetupMainWindow() *MainWindow {
 		Buttons:        buttons,
         Grid:           grid,
         ScrolledWindow: scrwin,
-        SearchBar:      sb,
         SearchEntry:    se,
         SongInfo:       songInfo,
         TreeView:       treeview,
