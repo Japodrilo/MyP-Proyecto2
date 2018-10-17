@@ -665,10 +665,13 @@ func (database *Database) QuerySimple(wildcard string) []int64 {
                "INNER JOIN performers ON performers.id_performer = rolas.id_performer " +
                "INNER JOIN albums ON albums.id_album = rolas.id_album " +
                "WHERE " +
-               " performers.name LIKE ? OR albums.name LIKE ? OR rolas.title LIKE ? "
+               " performers.name LIKE ? " +
+               " OR albums.name LIKE ? " +
+               " OR rolas.title LIKE ? " +
+               " OR rolas.genre LIKE ?"
 
     wildCard := "%" + strings.TrimSpace(wildcard) + "%"
-    tx, stmt, rows := database.PreparedQuery(stmtStr, wildCard, wildCard, wildCard)
+    tx, stmt, rows := database.PreparedQuery(stmtStr, wildCard, wildCard, wildCard, wildCard)
     defer stmt.Close()
     defer rows.Close()
 

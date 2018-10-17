@@ -9,7 +9,6 @@ import(
     _ "image/gif"
     "log"
     "os"
-    //"strings"
     "strconv"
 
     "github.com/Japodrilo/MyP-Proyecto2/pkg/model"
@@ -62,6 +61,10 @@ func NewPrincipal() *Principal {
 
     mainWindow.Buttons["new"].Connect("clicked", func() {
         principal.AddNewPerformer()
+    })
+
+    mainWindow.Buttons["performers"].Connect("clicked", func() {
+        principal.EditForeignPerformer()
     })
 
     sel.Connect("changed", func() {principal.SelectionChanged(sel)})
@@ -272,15 +275,48 @@ func (principal *Principal) EditPerformer() {
             page := performerPopUp.Notebook.GetCurrentPage()
             switch page {
             case 0:
-                principal.database.UpdatePerformerType(performerID , 0)
+                principal.database.UpdatePerformerType(performerID, 0)
                 principal.savePersonContent(performerPopUp.PersonContent)
             case 1:
-                principal.database.UpdatePerformerType(performerID , 1)
+                principal.database.UpdatePerformerType(performerID, 1)
                 principal.saveGroupContent(performerPopUp.GroupContent)
             }
             performerPopUp.Win.Close()
         })
     }
+}
+
+func (principal *Principal) EditForeignPerformer() {
+    var groupID int64
+    var groupName string
+    var personID int64
+    var personName string
+    foreignPopUp := view.EditForeignPerformerWindow()
+    for person, _ := range principal.database.AllPersons() {
+        foreignPopUp.PersonCBT.AppendText(person)
+    }
+    for group, _ := range principal.database.AllGroups() {
+        foreignPopUp.GroupCBT.AppendText(group)
+    }
+    foreignPopUp.PersonCBT.Connect("changed", func () {
+        personName = foreignPopUp.PersonCBT.GetActiveText()
+        principal.showPersonContent(foreignPopUp.PersonContent, personName)
+        personID = principal.database.ExistsPerson(personName)
+    })
+    foreignPopUp.GroupCBT.Connect("changed", func () {
+        groupName = foreignPopUp.GroupCBT.GetActiveText()
+        principal.showGroupContent(foreignPopUp.GroupContent, groupName)
+        groupID = principal.database.ExistsGroup(groupName)
+    })
+    foreignPopUp.SaveB.Connect("clicked", func() {
+        switch foreignPopUp.Notebook.GetCurrentPage() {
+        case 0:
+            principal.savePersonContent(foreignPopUp.PersonContent)
+        case 1:
+            principal.saveGroupContent(foreignPopUp.GroupContent)
+        }
+        foreignPopUp.Win.Close()
+    })
 }
 
 func (principal *Principal) AddNewPerformer() {
@@ -381,18 +417,18 @@ func (principal *Principal) rolaContentToRow(content *view.RolaContent, rolaID i
 func (principal *Principal) showPersonContent(content *view.PersonContent, name string) {
     personID := principal.database.ExistsPerson(name)
     stageName, realName, birth, death := principal.database.QueryPerson(personID)
-    content.StageNameE.SetText(stageName)
-    content.RealNameE.SetText(realName)
-    content.BirthE.SetText(birth)
-    content.DeathE.SetText(death)
+    glib.IdleAdd(content.StageNameE.SetText, stageName)
+    glib.IdleAdd(content.RealNameE.SetText, realName)
+    glib.IdleAdd(content.BirthE.SetText, birth)
+    glib.IdleAdd(content.DeathE.SetText, death)
 }
 
 func (principal *Principal) showGroupContent(content *view.GroupContent, name string) {
     groupID := principal.database.ExistsGroup(name)
     groupName, start, end := principal.database.QueryGroup(groupID)
-    content.GroupNameE.SetText(groupName)
-    content.StartE.SetText(start)
-    content.EndE.SetText(end)
+    glib.IdleAdd(content.GroupNameE.SetText, groupName)
+    glib.IdleAdd(content.StartE.SetText, start)
+    glib.IdleAdd(content.EndE.SetText, end)
 }
 
 func (principal *Principal) showRolaContent(content *view.RolaContent, rola *model.Rola) {

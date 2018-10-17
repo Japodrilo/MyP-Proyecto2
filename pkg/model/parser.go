@@ -32,7 +32,7 @@ func (parser *Parser) Parse(entry string) (string, []interface{}, bool) {
     }
     entry = strings.TrimPrefix(entry, "*~*")
     statement := "( "
-    tempLayer := strings.Split(entry, "*OR*")
+    tempLayer := strings.Split(entry, "||")
     orLayer := make([]string, 0)
     andLayer := make ([]string, 0)
     for _, term := range tempLayer {
@@ -45,134 +45,278 @@ func (parser *Parser) Parse(entry string) (string, []interface{}, bool) {
         return "", queryTerms, false
     }
     for i, term := range orLayer {
-        for _, command := range strings.Split(term, "*AND*") {
+        for _, command := range strings.Split(term, "&&") {
             command = strings.TrimSpace(command)
             if isParseable(command) {
                 andLayer = append(andLayer, command)
             }
         }
         if i < len(orLayer) - 1 {
-            andLayer = append(andLayer, "*OR*")
+            andLayer = append(andLayer, "||")
         }
     }
     for i, term := range andLayer {
         switch {
-        case term == "*OR*":
+        case term == "||":
             if hasNext(i, andLayer) {
                 statement = statement + ") OR ( "
             }
 
-        case strings.HasPrefix(term, "*TITLE*~"):
+        case strings.HasPrefix(term, "*TI*~"):
             if hasNext(i, andLayer) {
                 statement = statement + "rolas.title LIKE ? AND "
             } else {
                 statement = statement + "rolas.title LIKE ? "
             }
-            queryTerms = append(queryTerms, wildcard(strings.TrimSpace(strings.TrimPrefix(term, "*TITLE*~"))))
+            queryTerms = append(queryTerms, wildcard(strings.TrimSpace(strings.TrimPrefix(term, "*TI*~"))))
 
-        case strings.HasPrefix(term, "*TITLE*="):
+        case strings.HasPrefix(term, "*TI*="):
             if hasNext(i, andLayer) {
                 statement = statement + "rolas.title = ? AND "
             } else {
                 statement = statement + "rolas.title = ? "
             }
-            queryTerms = append(queryTerms, strings.TrimSpace(strings.TrimPrefix(term, "*TITLE*=")))
+            queryTerms = append(queryTerms, strings.TrimSpace(strings.TrimPrefix(term, "*TI*=")))
 
-        case strings.HasPrefix(term, "*ARTIST*~"):
+        case strings.HasPrefix(term, "*TI*!~"):
+            if hasNext(i, andLayer) {
+                statement = statement + "NOT rolas.title LIKE ? AND "
+            } else {
+                statement = statement + "NOT rolas.title LIKE ? "
+            }
+            queryTerms = append(queryTerms, wildcard(strings.TrimSpace(strings.TrimPrefix(term, "*TI*!~"))))
+
+        case strings.HasPrefix(term, "*TI*!="):
+            if hasNext(i, andLayer) {
+                statement = statement + "NOT rolas.title = ? AND "
+            } else {
+                statement = statement + "NOT rolas.title = ? "
+            }
+            queryTerms = append(queryTerms, strings.TrimSpace(strings.TrimPrefix(term, "*TI*!=")))
+
+        case strings.HasPrefix(term, "*AR*~"):
             if hasNext(i, andLayer) {
                 statement = statement + "performers.name LIKE ? AND "
             } else {
                 statement = statement + "performers.name LIKE ? "
             }
-            queryTerms = append(queryTerms, wildcard(strings.TrimSpace(strings.TrimPrefix(term, "*ARTIST*~"))))
+            queryTerms = append(queryTerms, wildcard(strings.TrimSpace(strings.TrimPrefix(term, "*AR*~"))))
 
-        case strings.HasPrefix(term, "*ARTIST*="):
+        case strings.HasPrefix(term, "*AR*="):
             if hasNext(i, andLayer) {
                 statement = statement + "performers.name = ? AND "
             } else {
                 statement = statement + "performers.name = ? "
             }
-            queryTerms = append(queryTerms, strings.TrimSpace(strings.TrimPrefix(term, "*ARTIST*=")))
+            queryTerms = append(queryTerms, strings.TrimSpace(strings.TrimPrefix(term, "*AR*=")))
 
-        case strings.HasPrefix(term, "*ALBUM*~"):
+        case strings.HasPrefix(term, "*AR*!~"):
+            if hasNext(i, andLayer) {
+                statement = statement + "NOT performers.name LIKE ? AND "
+            } else {
+                statement = statement + "NOT performers.name LIKE ? "
+            }
+            queryTerms = append(queryTerms, wildcard(strings.TrimSpace(strings.TrimPrefix(term, "*AR*!~"))))
+
+        case strings.HasPrefix(term, "*AR*!="):
+            if hasNext(i, andLayer) {
+                statement = statement + "NOT performers.name = ? AND "
+            } else {
+                statement = statement + "NOT performers.name = ? "
+            }
+            queryTerms = append(queryTerms, strings.TrimSpace(strings.TrimPrefix(term, "*AR*!=")))
+
+        case strings.HasPrefix(term, "*AL*~"):
             if hasNext(i, andLayer) {
                 statement = statement + "albums.name LIKE ? AND "
             } else {
                 statement = statement + "albums.name LIKE ? "
             }
-            queryTerms = append(queryTerms, wildcard(strings.TrimSpace(strings.TrimPrefix(term, "*ALBUM*~"))))
+            queryTerms = append(queryTerms, wildcard(strings.TrimSpace(strings.TrimPrefix(term, "*AL*~"))))
 
-        case strings.HasPrefix(term, "*ALBUM*="):
+        case strings.HasPrefix(term, "*AL*="):
             if hasNext(i, andLayer) {
                 statement = statement + "albums.name = ? AND "
             } else {
                 statement = statement + "albums.name = ? "
             }
-            queryTerms = append(queryTerms, strings.TrimSpace(strings.TrimPrefix(term, "*ALBUM*=")))
+            queryTerms = append(queryTerms, strings.TrimSpace(strings.TrimPrefix(term, "*AL*=")))
 
-        case strings.HasPrefix(term, "*TRACK*~"):
+        case strings.HasPrefix(term, "*AL*!~"):
+            if hasNext(i, andLayer) {
+                statement = statement + "NOT albums.name LIKE ? AND "
+            } else {
+                statement = statement + "NOT albums.name LIKE ? "
+            }
+            queryTerms = append(queryTerms, wildcard(strings.TrimSpace(strings.TrimPrefix(term, "*AL*!~"))))
+
+        case strings.HasPrefix(term, "*AL*!="):
+            if hasNext(i, andLayer) {
+                statement = statement + "NOT albums.name = ? AND "
+            } else {
+                statement = statement + "NOT albums.name = ? "
+            }
+            queryTerms = append(queryTerms, strings.TrimSpace(strings.TrimPrefix(term, "*AL*!=")))
+
+        case strings.HasPrefix(term, "*TR*~"):
             if hasNext(i, andLayer) {
                 statement = statement + "rolas.track LIKE ? AND "
             } else {
                 statement = statement + "rolas.track LIKE ? "
             }
-            queryTerms = append(queryTerms, wildcard(strings.TrimSpace(strings.TrimPrefix(term, "*TRACK*~"))))
+            queryTerms = append(queryTerms, wildcard(strings.TrimSpace(strings.TrimPrefix(term, "*TR*~"))))
 
-        case strings.HasPrefix(term, "*TRACK*="):
+        case strings.HasPrefix(term, "*TR*="):
             if hasNext(i, andLayer) {
                 statement = statement + "rolas.track = ? AND "
             } else {
                 statement = statement + "rolas.track = ? "
             }
-            queryTerms = append(queryTerms, strings.TrimSpace(strings.TrimPrefix(term, "*TRACK*=")))
+            queryTerms = append(queryTerms, strings.TrimSpace(strings.TrimPrefix(term, "*TR*=")))
 
-        case strings.HasPrefix(term, "*GENRE*~"):
+        case strings.HasPrefix(term, "*TR*<"):
+            if hasNext(i, andLayer) {
+                statement = statement + "rolas.track < ? AND "
+            } else {
+                statement = statement + "rolas.track < ? "
+            }
+            queryTerms = append(queryTerms, strings.TrimSpace(strings.TrimPrefix(term, "*TR*<")))
+
+        case strings.HasPrefix(term, "*TR*>"):
+            if hasNext(i, andLayer) {
+                statement = statement + "rolas.track > ? AND "
+            } else {
+                statement = statement + "rolas.track > ? "
+            }
+            queryTerms = append(queryTerms, strings.TrimSpace(strings.TrimPrefix(term, "*TR*>")))
+
+        case strings.HasPrefix(term, "*TR*!~"):
+            if hasNext(i, andLayer) {
+                statement = statement + "NOT rolas.track LIKE ? AND "
+            } else {
+                statement = statement + "NOT rolas.track LIKE ? "
+            }
+            queryTerms = append(queryTerms, wildcard(strings.TrimSpace(strings.TrimPrefix(term, "*TR*!~"))))
+
+        case strings.HasPrefix(term, "*TR*!="):
+            if hasNext(i, andLayer) {
+                statement = statement + "NOT rolas.track = ? AND "
+            } else {
+                statement = statement + "NOT rolas.track = ? "
+            }
+            queryTerms = append(queryTerms, strings.TrimSpace(strings.TrimPrefix(term, "*TR*!=")))
+
+        case strings.HasPrefix(term, "*TR*!<"):
+            if hasNext(i, andLayer) {
+                statement = statement + "rolas.track >= ? AND "
+            } else {
+                statement = statement + "rolas.track >= ? "
+            }
+            queryTerms = append(queryTerms, strings.TrimSpace(strings.TrimPrefix(term, "*TR*!<")))
+
+        case strings.HasPrefix(term, "*TR*!>"):
+            if hasNext(i, andLayer) {
+                statement = statement + "rolas.track <= ? AND "
+            } else {
+                statement = statement + "rolas.track <= ? "
+            }
+            queryTerms = append(queryTerms, strings.TrimSpace(strings.TrimPrefix(term, "*TR*!>")))
+
+        case strings.HasPrefix(term, "*GE*~"):
             if hasNext(i, andLayer) {
                 statement = statement + "rolas.genre LIKE ? AND "
             } else {
                 statement = statement + "rolas.genre LIKE ? "
             }
-            queryTerms = append(queryTerms, wildcard(strings.TrimSpace(strings.TrimPrefix(term, "*GENRE*~"))))
+            queryTerms = append(queryTerms, wildcard(strings.TrimSpace(strings.TrimPrefix(term, "*GE*~"))))
 
-        case strings.HasPrefix(term, "*GENRE*="):
+        case strings.HasPrefix(term, "*GE*="):
             if hasNext(i, andLayer) {
                 statement = statement + "rolas.genre = ? AND "
             } else {
                 statement = statement + "rolas.genre = ? "
             }
-            queryTerms = append(queryTerms, strings.TrimSpace(strings.TrimPrefix(term, "*GENRE*=")))
+            queryTerms = append(queryTerms, strings.TrimSpace(strings.TrimPrefix(term, "*GE*=")))
 
-        case strings.HasPrefix(term, "*YEAR*~"):
+        case strings.HasPrefix(term, "*GE*!~"):
+            if hasNext(i, andLayer) {
+                statement = statement + "NOT rolas.genre LIKE ? AND "
+            } else {
+                statement = statement + "NOT rolas.genre LIKE ? "
+            }
+            queryTerms = append(queryTerms, wildcard(strings.TrimSpace(strings.TrimPrefix(term, "*GE*!~"))))
+
+        case strings.HasPrefix(term, "*GE*!="):
+            if hasNext(i, andLayer) {
+                statement = statement + "NOT rolas.genre = ? AND "
+            } else {
+                statement = statement + "NOT rolas.genre = ? "
+            }
+            queryTerms = append(queryTerms, strings.TrimSpace(strings.TrimPrefix(term, "*GE*!=")))
+
+        case strings.HasPrefix(term, "*YE*~"):
             if hasNext(i, andLayer) {
                 statement = statement + "rolas.YEAR LIKE ? AND "
             } else {
                 statement = statement + "rolas.YEAR LIKE ? "
             }
-            queryTerms = append(queryTerms, wildcard(strings.TrimSpace(strings.TrimPrefix(term, "*YEAR*~"))))
+            queryTerms = append(queryTerms, wildcard(strings.TrimSpace(strings.TrimPrefix(term, "*YE*~"))))
 
-        case strings.HasPrefix(term, "*YEAR*="):
+        case strings.HasPrefix(term, "*YE*="):
             if hasNext(i, andLayer) {
                 statement = statement + "rolas.year = ? AND "
             } else {
                 statement = statement + "rolas.year = ? "
             }
-            queryTerms = append(queryTerms, strings.TrimSpace(strings.TrimPrefix(term, "*YEAR*=")))
+            queryTerms = append(queryTerms, strings.TrimSpace(strings.TrimPrefix(term, "*YE*=")))
 
-        case strings.HasPrefix(term, "*YEAR*<="):
+        case strings.HasPrefix(term, "*YE*<"):
             if hasNext(i, andLayer) {
-                statement = statement + "rolas.year <= ? AND "
+                statement = statement + "rolas.year < ? AND "
             } else {
-                statement = statement + "rolas.year <= ? "
+                statement = statement + "rolas.year < ? "
             }
-            queryTerms = append(queryTerms, strings.TrimSpace(strings.TrimPrefix(term, "*YEAR*<=")))
+            queryTerms = append(queryTerms, strings.TrimSpace(strings.TrimPrefix(term, "*YE*<")))
 
-        case strings.HasPrefix(term, "*YEAR*>="):
+        case strings.HasPrefix(term, "*YE*>"):
+            if hasNext(i, andLayer) {
+                statement = statement + "rolas.year > ? AND "
+            } else {
+                statement = statement + "rolas.year > ? "
+            }
+            queryTerms = append(queryTerms, strings.TrimSpace(strings.TrimPrefix(term, "*YE*>")))
+
+        case strings.HasPrefix(term, "*YE*!~"):
+            if hasNext(i, andLayer) {
+                statement = statement + "NOT rolas.YEAR LIKE ? AND "
+            } else {
+                statement = statement + "NOT rolas.YEAR LIKE ? "
+            }
+            queryTerms = append(queryTerms, wildcard(strings.TrimSpace(strings.TrimPrefix(term, "*YE*!~"))))
+
+        case strings.HasPrefix(term, "*YE*!="):
+            if hasNext(i, andLayer) {
+                statement = statement + "NOT rolas.year = ? AND "
+            } else {
+                statement = statement + "NOT rolas.year = ? "
+            }
+            queryTerms = append(queryTerms, strings.TrimSpace(strings.TrimPrefix(term, "*YE*!=")))
+
+        case strings.HasPrefix(term, "*YE*!<"):
             if hasNext(i, andLayer) {
                 statement = statement + "rolas.year >= ? AND "
             } else {
                 statement = statement + "rolas.year >= ? "
             }
-            queryTerms = append(queryTerms, strings.TrimSpace(strings.TrimPrefix(term, "*YEAR*>=")))
+            queryTerms = append(queryTerms, strings.TrimSpace(strings.TrimPrefix(term, "*YE*!<")))
+
+        case strings.HasPrefix(term, "*YE*!>"):
+            if hasNext(i, andLayer) {
+                statement = statement + "rolas.year <= ? AND "
+            } else {
+                statement = statement + "rolas.year <= ? "
+            }
+            queryTerms = append(queryTerms, strings.TrimSpace(strings.TrimPrefix(term, "*YE*!>")))
         }
     }
     statement = parser.stmt + statement + ")"
@@ -193,33 +337,61 @@ func hasNext(i int, slice []string) bool {
 func isParseable(entry string) bool {
     entry = strings.TrimSpace(entry)
     switch {
-    case strings.HasPrefix(entry, "*TITLE*~"):
+    case strings.HasPrefix(entry, "*TI*~"):
         return true
-    case strings.HasPrefix(entry, "*TITLE*="):
+    case strings.HasPrefix(entry, "*TI*="):
         return true
-    case strings.HasPrefix(entry, "*ARTIST*~"):
+    case strings.HasPrefix(entry, "*TI*!~"):
         return true
-    case strings.HasPrefix(entry, "*ARTIST*="):
+    case strings.HasPrefix(entry, "*TI*!="):
         return true
-    case strings.HasPrefix(entry, "*ALBUM*~"):
+    case strings.HasPrefix(entry, "*AR*~"):
         return true
-    case strings.HasPrefix(entry, "*ALBUM*="):
+    case strings.HasPrefix(entry, "*AR*="):
         return true
-    case strings.HasPrefix(entry, "*TRACK*~"):
+    case strings.HasPrefix(entry, "*AR*!~"):
         return true
-    case strings.HasPrefix(entry, "*TRACK*="):
+    case strings.HasPrefix(entry, "*AR*!="):
         return true
-    case strings.HasPrefix(entry, "*GENRE*~"):
+    case strings.HasPrefix(entry, "*AL*~"):
         return true
-    case strings.HasPrefix(entry, "*GENRE*="):
+    case strings.HasPrefix(entry, "*AL*="):
         return true
-    case strings.HasPrefix(entry, "*YEAR*~"):
+    case strings.HasPrefix(entry, "*AL*!~"):
         return true
-    case strings.HasPrefix(entry, "*YEAR*="):
+    case strings.HasPrefix(entry, "*AL*!="):
         return true
-    case strings.HasPrefix(entry, "*YEAR*<="):
+    case strings.HasPrefix(entry, "*TR*~"):
         return true
-    case strings.HasPrefix(entry, "*YEAR*>="):
+    case strings.HasPrefix(entry, "*TR*="):
+        return true
+    case strings.HasPrefix(entry, "*TR*!~"):
+        return true
+    case strings.HasPrefix(entry, "*TR*!="):
+        return true
+    case strings.HasPrefix(entry, "*GE*~"):
+        return true
+    case strings.HasPrefix(entry, "*GE*="):
+        return true
+    case strings.HasPrefix(entry, "*GE*!~"):
+        return true
+    case strings.HasPrefix(entry, "*GE*!="):
+        return true
+    case strings.HasPrefix(entry, "*YE*~"):
+        return true
+    case strings.HasPrefix(entry, "*YE*="):
+        return true
+    case strings.HasPrefix(entry, "*YE*<"):
+        return true
+    case strings.HasPrefix(entry, "*YE*>"):
+        return true
+    case strings.HasPrefix(entry, "*YE*!~"):
+        return true
+    case strings.HasPrefix(entry, "*YE*!="):
+        return true
+    case strings.HasPrefix(entry, "*YE*!<"):
+        return true
+    case strings.HasPrefix(entry, "*YE*!>"):
         return true
     }
     return false
