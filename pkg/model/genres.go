@@ -4,6 +4,9 @@ import (
     "sync"
 )
 
+// Simple translator for ID3v1 genre codes, it contains
+// a single dictionary with the codes as keys and the corresponding
+// genres as values (both are strings).  It is a singleton.
 type Genre struct {
     genres map[string]string
 }
@@ -11,6 +14,7 @@ type Genre struct {
 var instance *Genre
 var once     sync.Once
 
+// Returns the singleton instance of Genre.
 func GetGenre() *Genre {
     once.Do(func() {
         genres := make(map[string]string)
@@ -99,6 +103,7 @@ func GetGenre() *Genre {
     return instance
 }
 
+// Translates an ID3v1 genre code into its corresponding genre.
 func (genre *Genre) Get(code string) string {
     name := genre.genres[code]
     if name == "" {

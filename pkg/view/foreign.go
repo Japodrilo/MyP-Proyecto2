@@ -4,6 +4,8 @@ import (
 	"github.com/gotk3/gotk3/gtk"
 )
 
+// Holds the gtk.Window object corresponding to the 'edit performer'
+// window, and its necessary elements to connect it to the model.
 type EditForeignPerformer struct {
     GroupCBT      *gtk.ComboBoxText
     GroupContent  *GroupContent
@@ -14,7 +16,9 @@ type EditForeignPerformer struct {
     Win           *gtk.Window
 }
 
-
+// Draws the window coresponding to the 'performers' button in the
+// main window.   It is intended to edit any existing person or group,
+// not necessarily appearing as a performer in the database.
 func EditForeignPerformerWindow() *EditForeignPerformer{
     win := SetupPopupWindow("Edit Performer", 350, 216)
     box := SetupBox()

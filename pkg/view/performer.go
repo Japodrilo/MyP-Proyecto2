@@ -4,6 +4,10 @@ import (
 	"github.com/gotk3/gotk3/gtk"
 )
 
+// EditPerformer represents a window for the 'edit performer' action
+// associated to a row in the tree view of the main window. It contains
+// the necessary fields that the controller will use to connect it with
+// the model.
 type EditPerformer struct {
     GroupContent  *GroupContent
     Notebook      *gtk.Notebook
@@ -12,7 +16,7 @@ type EditPerformer struct {
     Win           *gtk.Window
 }
 
-
+// EditPerformerWindow draws the window.
 func EditPerformerWindow() *EditPerformer{
     win := SetupPopupWindow("Edit Performer", 350, 216)
     box := SetupBox()

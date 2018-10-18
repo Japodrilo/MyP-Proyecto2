@@ -201,6 +201,9 @@ func (principal *Principal) selectionChanged(s *gtk.TreeSelection) {
             pix, _ := gdk.PixbufNewFromFileAtScale(cache + "/image.jpg", 250, 250, false)
             image, _ := gtk.ImageNewFromPixbuf(pix)
             glib.IdleAdd(principal.AttachInfo, &SongInfo{image, items[0], items[1], items[2]})
+            if err != nil {
+                log.Fatal("could not encode the image to jpeg")
+            }
         } else {
             principal.defaultImage(items[0], items[1], items[2])
         }
@@ -446,7 +449,7 @@ func (principal *Principal) saveGroup(groupName, start, end string) {
     if groupID > 0 {
         principal.database.UpdateGroup(groupName, start, end, groupID)
     } else {
-        groupID = principal.database.AddGroup(groupName, start, end)
+        principal.database.AddGroup(groupName, start, end)
     }
 }
 

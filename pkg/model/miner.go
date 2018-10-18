@@ -38,7 +38,7 @@ func (miner *Miner) Traverse() {
 
     err = filepath.Walk(start, func(path string, info os.FileInfo, err error) error {
         if err != nil {
-            log.Fatal("failure accessing the path %q: %v\n", path, err)
+            log.Fatal("failure accessing the path: ", err)
             return err
         }
         if !info.IsDir() && strings.HasSuffix(info.Name(), ".mp3") {
@@ -47,7 +47,7 @@ func (miner *Miner) Traverse() {
         return nil
     })
     if err != nil {
-        log.Fatal("error walking the path %q: %v\n", start, err)
+        log.Fatal("error walking the path: ", err)
     }
 }
 

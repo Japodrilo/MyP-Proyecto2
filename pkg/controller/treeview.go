@@ -8,6 +8,7 @@ import (
     "github.com/Japodrilo/MyP-Proyecto2/pkg/view"
 )
 
+// Constants corresponding to the column numbers in the tree view.
 const (
 	COLUMN_TITLE = iota
 	COLUMN_ARTIST
@@ -18,7 +19,7 @@ const (
     COLUMN_ID
 )
 
-// Structure representing the tree view in the main window of
+// TreeView represents the tree view in the main window of
 // the application.   It contains the gtk window form the view
 // module, and a dictionary with Rola id's as keys, and the rows
 // of the tree view as entries (*gtk.TreeIter).
@@ -27,6 +28,8 @@ type TreeView struct {
     Rows map[int64]*gtk.TreeIter
 }
 
+// Constructor taking as an argument a view.TreeView, and creating
+// a new map to hold the Rola id's and rows of the tree view.
 func NewTreeView(treeView *view.TreeView) *TreeView {
     Rows := make(map[int64]*gtk.TreeIter)
 	return &TreeView{
@@ -35,7 +38,9 @@ func NewTreeView(treeView *view.TreeView) *TreeView {
 	}
 }
 
-// Structure to bind the information contained in a row together.
+// RowInfo binds the information contained in a row in a single object.
+// This is mainly used to pass a row's information as an argument to
+// glib.IdleAdd().
 type RowInfo struct {
     title   string
     artist  string
@@ -98,7 +103,7 @@ func (treeview *TreeView) updateRow(rola *model.Rola) {
     treeview.ListStore.SetValue(iter, 3, rola.Genre())
 }
 
-// Makes all the rows of the tree view visible.
+// AllVisible makes all the rows of the tree view visible.
 func (treeview *TreeView) AllVisible() {
     iter, ok := treeview.ListStore.GetIterFirst()
     for ok {
@@ -107,7 +112,7 @@ func (treeview *TreeView) AllVisible() {
     }
 }
 
-// Hides all the rows of the tree view.
+// AllInvisible hides all the rows of the tree view.
 func (treeview *TreeView) AllInvisible() {
     sel, err := treeview.TreeView.TreeView.GetSelection()
     if err != nil {

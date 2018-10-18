@@ -4,6 +4,9 @@ import (
 	"github.com/gotk3/gotk3/gtk"
 )
 
+// PersonContent represent the contents of the main tab in the 'edit
+// person' window (without the window). It contains the entries for
+// the user to edit  the information and the grid that holds them.
 type PersonContent struct {
     grid       *gtk.Grid
     StageNameE *gtk.Entry
@@ -12,6 +15,8 @@ type PersonContent struct {
     DeathE     *gtk.Entry
 }
 
+// NewPersonContent creates a PersonContent object, which should be
+// added to a gtk.Container in order to be used.
 func NewPersonContent() *PersonContent {
     grid := SetupGrid(gtk.ORIENTATION_VERTICAL)
 
@@ -51,12 +56,19 @@ func NewPersonContent() *PersonContent {
     }
 }
 
+// AddToGroup represent the contents of the tab in the 'edit person'
+// window where a person can be added to a group (without the window).
+// It contains the combo box that shows the list of existing persons,
+// the list box to show the current members of the group and the grid
+// that holds them.
 type AddToGroup struct {
     CurrentGroupLB *gtk.ListBox
     grid           *gtk.Grid
     NewGroupCBT    *gtk.ComboBoxText
 }
 
+// NewAddToGroup creates an AddToGroup object, which is intended to be
+// added to a gtk.Container in order to be used.
 func NewAddToGroup() *AddToGroup {
     grid := SetupGrid(gtk.ORIENTATION_VERTICAL)
 
@@ -84,6 +96,9 @@ func NewAddToGroup() *AddToGroup {
     }
 }
 
+// EditPerson represents the window for the 'edit person' dialog
+// in the main window.   It contains a PersonContent and the
+// relevant fields from an AddToGroup.
 type EditPerson struct {
     CurrentGroupLB *gtk.ListBox
     NewGroupCBT    *gtk.ComboBoxText
@@ -93,6 +108,7 @@ type EditPerson struct {
     Win            *gtk.Window
 }
 
+// EditPersonWindow creates and draws a window containing an EditPerson.
 func EditPersonWindow() *EditPerson{
     win := SetupPopupWindow("Edit Person", 350, 216)
     box := SetupBox()

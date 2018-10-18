@@ -7,6 +7,6 @@ import (
 
 func main() {
     gtk.Init(nil)
-	controller.MainWindow()
-	gtk.Main()
+    controller.MainWindow()
+    gtk.Main()
 }
