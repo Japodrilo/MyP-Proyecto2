@@ -15,9 +15,9 @@ a cabo las búsquedas sin tener que utilizar el lenguaje de SQL.
 * Reproductor mp3: [oto](https://github.com/hajimehoshi/oto)
 * Controlador sqlite: [go-sqlite3](https://github.com/mattn/go-sqlite3)
 * Administrador sql: [dotsql](https://github.com/gchaincl/dotsql)
-* Manejo de ID3v2: [id3v2](https://github.com/bogem/id3v2)
+* Manejo de ID3v2: [tag](https://github.com/dhowden/tag)
               
-## Instalación
+## Instalation
 
 Antes de compilar, gotk3 debe estar instalado en el GOPATH, en la ruta
 src/github.com/gotk3/gotk3.   Para instalarlo, basta utilizar el comando
@@ -47,10 +47,31 @@ $ git clone https://github.com/hajimehoshi/go-mp3.git
 $ git clone https://github.com/hajimehoshi/oto.git
 ```
 
-
 El paquete oto requiere a su vez libasound2-dev,
 que puede obtenerese en Ubunto o Debian con el comando
 
 ```bash
 $ sudo apt install libasound2-dev
+```
+
+El manejo de etiquetas ID3v2 se realiza con el paquete tag, que se
+puede obtener con el comando
+
+```bash
+$ go get github.com/dhowden/tag/...
+```
+
+El controlador de sqlite es go-sqlite3, que puede obtenerse
+mediante
+
+```bash
+$ go get github.com/mattn/go-sqlite3
+```
+
+A sqlite administrator is used to retrieve sql commands from an
+auxiliary file, we chose dotsql, which can be obtained by the
+command
+
+```bash
+$ go get github.com/gchaincl/dotsql
 ```
