@@ -22,7 +22,7 @@ type Parser struct {
 var instanceP *Parser
 
 func GetParser() *Parser {
-    once.Do(func() {
+    if instanceP == nil {
         instanceP = &Parser{
         `SELECT
            rolas.id_rola
@@ -32,7 +32,7 @@ func GetParser() *Parser {
          INNER JOIN albums ON albums.id_album = rolas.id_album
          WHERE `,
         }
-    })
+    }
     return instanceP
 }
 
@@ -350,63 +350,23 @@ func hasNext(i int, slice []string) bool {
 
 func isParseable(entry string) bool {
     entry = strings.TrimSpace(entry)
-    switch {
-    case strings.HasPrefix(entry, "*TI*~"):
-        return true
-    case strings.HasPrefix(entry, "*TI*="):
-        return true
-    case strings.HasPrefix(entry, "*TI*!~"):
-        return true
-    case strings.HasPrefix(entry, "*TI*!="):
-        return true
-    case strings.HasPrefix(entry, "*AR*~"):
-        return true
-    case strings.HasPrefix(entry, "*AR*="):
-        return true
-    case strings.HasPrefix(entry, "*AR*!~"):
-        return true
-    case strings.HasPrefix(entry, "*AR*!="):
-        return true
-    case strings.HasPrefix(entry, "*AL*~"):
-        return true
-    case strings.HasPrefix(entry, "*AL*="):
-        return true
-    case strings.HasPrefix(entry, "*AL*!~"):
-        return true
-    case strings.HasPrefix(entry, "*AL*!="):
-        return true
-    case strings.HasPrefix(entry, "*TR*~"):
-        return true
-    case strings.HasPrefix(entry, "*TR*="):
-        return true
-    case strings.HasPrefix(entry, "*TR*!~"):
-        return true
-    case strings.HasPrefix(entry, "*TR*!="):
-        return true
-    case strings.HasPrefix(entry, "*GE*~"):
-        return true
-    case strings.HasPrefix(entry, "*GE*="):
-        return true
-    case strings.HasPrefix(entry, "*GE*!~"):
-        return true
-    case strings.HasPrefix(entry, "*GE*!="):
-        return true
-    case strings.HasPrefix(entry, "*YE*~"):
-        return true
-    case strings.HasPrefix(entry, "*YE*="):
-        return true
-    case strings.HasPrefix(entry, "*YE*<"):
-        return true
-    case strings.HasPrefix(entry, "*YE*>"):
-        return true
-    case strings.HasPrefix(entry, "*YE*!~"):
-        return true
-    case strings.HasPrefix(entry, "*YE*!="):
-        return true
-    case strings.HasPrefix(entry, "*YE*!<"):
-        return true
-    case strings.HasPrefix(entry, "*YE*!>"):
-        return true
-    }
+	frames := []string{"*TI*", "*AR*", "*AL*", "*GE*"}
+	operators := []string{"~", "=", "!~", "!="}
+	for _, frame := range frames {
+		for _, operator := range operators {
+			if strings.HasPrefix(entry, frame + operator) {
+				return true
+			}
+		}
+	}
+	frames = []string{"*TR*", "*YE*"}
+	operators = []string{"~", "=", "<", ">", "!~", "!=", "!<", "!>"}
+	for _, frame := range frames {
+		for _, operator := range operators {
+			if strings.HasPrefix(entry, frame + operator) {
+				return true
+			}
+		}
+	}
     return false
 }

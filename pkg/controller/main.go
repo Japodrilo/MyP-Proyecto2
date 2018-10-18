@@ -11,6 +11,8 @@ import(
     "os"
     "os/user"
     "strconv"
+	"time"
+	"unicode"
 
     "github.com/Japodrilo/MyP-Proyecto2/pkg/model"
 	"github.com/Japodrilo/MyP-Proyecto2/pkg/view"
@@ -123,8 +125,9 @@ func (principal *Principal) Populate() {
     miner := model.NewMiner()
     miner.Traverse()
     go miner.Extract()
-
+	time.Sleep(100 * time.Millisecond)
     go miner.Populate(principal.database)
+	time.Sleep(100 * time.Millisecond)
     go principal.populateOnTheFly(miner)
 }
 
@@ -374,6 +377,7 @@ func (principal *Principal) populateFromExistingDB(database *model.Database) {
 func (principal *Principal) populateOnTheFly(miner *model.Miner) {
     for rola := range miner.TrackList {
 	    glib.IdleAdd(principal.treeview.addRowFromRola, rola)
+		time.Sleep(100 * time.Nanosecond)
     }
     principal.mainWindow.Buttons["populate"].SetSensitive(true)
     principal.treeSel.SetMode(gtk.SELECTION_SINGLE)
@@ -437,10 +441,20 @@ func (principal *Principal) saveRolaContent(rolaContent *view.RolaContent, rolaI
     rola.SetArtist(view.GetTextEntry(rolaContent.ArtistE))
     rola.SetAlbum(view.GetTextEntry(rolaContent.AlbumE))
     rola.SetGenre(view.GetTextEntry(rolaContent.GenreE))
-    newTrack, _ := strconv.Atoi(view.GetTextEntry(rolaContent.TrackE))
-    rola.SetTrack(newTrack)
-    newYear, _ := strconv.Atoi(view.GetTextEntry(rolaContent.YearE))
-    rola.SetYear(newYear)
+	if isInt(view.GetTextEntry(rolaContent.TrackE)) {
+    	newTrack, _ := strconv.Atoi(view.GetTextEntry(rolaContent.TrackE))
+    	rola.SetTrack(newTrack)
+	} else {
+		oldRola := principal.database.QueryRola(rolaID)
+		rola.SetTrack(oldRola.Track())
+	}
+	if isInt(view.GetTextEntry(rolaContent.YearE)) {
+		newYear, _ := strconv.Atoi(view.GetTextEntry(rolaContent.YearE))
+	    rola.SetYear(newYear)
+	} else {
+		oldRola := principal.database.QueryRola(rolaID)
+		rola.SetYear(oldRola.Year())
+	}
     principal.database.UpdateRola(rola)
 }
 
@@ -520,4 +534,13 @@ func (principal *Principal) AttachInfo(songInfo *SongInfo) {
     principal.mainWindow.SongInfo[1].SetText("\t" + songInfo.artist + "\n\n\n")
     principal.mainWindow.SongInfo[2].SetText("\t" + songInfo.album)
     principal.mainWindow.Win.ShowAll()
+}
+
+func isInt(text string) bool {
+	for _, c := range text {
+		if !unicode.IsDigit(c) {
+			return false
+		}
+	}
+	return true
 }
