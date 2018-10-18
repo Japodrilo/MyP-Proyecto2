@@ -4,6 +4,17 @@ import (
     "strings"
 )
 
+// Parser for the search bar of the main application window.
+// The parser uses && and || for 'AND' and 'OR', respectively;
+// searches can be performed by any of the id3v2 fields in a
+// Rola.   Start a search with '*~*', use the first two letters
+//in the field between asterisks, followed by '=', '~', '<', or
+// '>' for an exact search, a wildcard search, or for certain
+// ranges (for numeric fields), respectively, e.g., '*AR*~punk'
+// searches for all artists containing 'punk' in their name.
+// There are negated versions of the four operators, '!=', etc.
+// The parser joins the atomic formulas to get a formula in
+// disjunctive normal form.
 type Parser struct {
     stmt string
 }
@@ -13,13 +24,13 @@ var instanceP *Parser
 func GetParser() *Parser {
     once.Do(func() {
         instanceP = &Parser{
-            "SELECT " +
-            " rolas.id_rola " +
-            "FROM " +
-            " rolas " +
-            "INNER JOIN performers ON performers.id_performer = rolas.id_performer " +
-            "INNER JOIN albums ON albums.id_album = rolas.id_album " +
-            "WHERE ",
+        `SELECT
+           rolas.id_rola
+         FROM
+           rolas
+         INNER JOIN performers ON performers.id_performer = rolas.id_performer
+         INNER JOIN albums ON albums.id_album = rolas.id_album
+         WHERE `,
         }
     })
     return instanceP
@@ -54,6 +65,9 @@ func (parser *Parser) Parse(entry string) (string, []interface{}, bool) {
         if i < len(orLayer) - 1 {
             andLayer = append(andLayer, "||")
         }
+    }
+    if len(andLayer) == 0 {
+        return "", queryTerms, false
     }
     for i, term := range andLayer {
         switch {

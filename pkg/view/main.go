@@ -6,8 +6,8 @@ import (
 )
 
 /**
- * Estructura que representa a la ventana principal y
- * sus campos de interés para el controlador.
+ * Structure representing the main window, and holding the parameters
+ * used by the controller.
  */
 type MainWindow struct {
     Buttons        map[string]*gtk.ToolButton
@@ -20,8 +20,8 @@ type MainWindow struct {
 }
 
 /**
- * Constructor, función que dibuja la ventana principal
- * e inicializa los campos que necesita el controlador.
+ * Draws the principal window and initializes the fields used
+ * by the controller. 
  */
 func SetupMainWindow() *MainWindow {
     buttons := make(map[string]*gtk.ToolButton)
@@ -48,7 +48,7 @@ func SetupMainWindow() *MainWindow {
     space2 := SetupLabel("                       ")
     space3 := SetupLabel("                       ")
 
-    pix, _ := gdk.PixbufNewFromFileAtScale("./noimage.png", 250, 250, true)
+    pix, _ := gdk.PixbufNewFromFileAtScale("../data/noimage.png", 250, 250, true)
     defaultImage, _ := gtk.ImageNewFromPixbuf(pix)
 
     se.SetHExpand(true)

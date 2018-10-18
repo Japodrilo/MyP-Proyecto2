@@ -18,6 +18,10 @@ const (
     COLUMN_ID
 )
 
+// Structure representing the tree view in the main window of
+// the application.   It contains the gtk window form the view
+// module, and a dictionary with Rola id's as keys, and the rows
+// of the tree view as entries (*gtk.TreeIter).
 type TreeView struct {
     *view.TreeView
     Rows map[int64]*gtk.TreeIter
@@ -31,6 +35,7 @@ func NewTreeView(treeView *view.TreeView) *TreeView {
 	}
 }
 
+// Structure to bind the information contained in a row together.
 type RowInfo struct {
     title   string
     artist  string
@@ -41,7 +46,8 @@ type RowInfo struct {
     id      int64
 }
 
-//Method to append a row to the list store for the tree view
+// Unexported method to append a row to the list store for the tree view.
+// TODO: use RowInfo as parameter.
 func (treeview *TreeView) addRow(title, artist, album, genre, path string, visible bool, id int64) {
 	iter := treeview.ListStore.Append()
 
@@ -55,16 +61,16 @@ func (treeview *TreeView) addRow(title, artist, album, genre, path string, visib
     treeview.Rows[id] = iter
 }
 
-//Method to append a row to the list store for the tree view
+// Unexported method to append a row to the list store for the tree view.
 func (treeview *TreeView) addRowStruct(rowInfo *RowInfo) {
 	treeview.addRow(rowInfo.title, rowInfo.artist, rowInfo.album, rowInfo.genre, rowInfo.path, rowInfo.visible, rowInfo.id)
 }
 
+// Unexported method to append a row to the list store for the
+// tree view directly from a Rola.
 func (treeview *TreeView) addRowFromRola(rola *model.Rola) {
-    // Get an iterator for a new row at the end of the list store
 	iter := treeview.ListStore.Append()
 
-	// Set the contents of the list store row that the iterator represents
 	err := treeview.ListStore.Set(iter,
 		[]int{COLUMN_TITLE, COLUMN_ARTIST, COLUMN_ALBUM, COLUMN_GENRE, COLUMN_PATH, COLUMN_VISIBLE, COLUMN_ID},
 		[]interface{}{rola.Title(), rola.Artist(), rola.Album(), rola.Genre(), rola.Path(), true, rola.ID()})
@@ -75,6 +81,24 @@ func (treeview *TreeView) addRowFromRola(rola *model.Rola) {
     treeview.Rows[rola.ID()] = iter
 }
 
+// Unexported method to update the performer of a Rola in the
+// tree view.
+func (treeview *TreeView) updatePerformer(rola *model.Rola) {
+    iter := treeview.Rows[rola.ID()]
+    treeview.ListStore.SetValue(iter, 1, rola.Artist())
+}
+
+// Unexported method to update all the entries of a row in
+// the tree view.
+func (treeview *TreeView) updateRow(rola *model.Rola) {
+    iter := treeview.Rows[rola.ID()]
+    treeview.ListStore.SetValue(iter, 0, rola.Title())
+    treeview.ListStore.SetValue(iter, 1, rola.Artist())
+    treeview.ListStore.SetValue(iter, 2, rola.Album())
+    treeview.ListStore.SetValue(iter, 3, rola.Genre())
+}
+
+// Makes all the rows of the tree view visible.
 func (treeview *TreeView) AllVisible() {
     iter, ok := treeview.ListStore.GetIterFirst()
     for ok {
@@ -83,6 +107,7 @@ func (treeview *TreeView) AllVisible() {
     }
 }
 
+// Hides all the rows of the tree view.
 func (treeview *TreeView) AllInvisible() {
     sel, err := treeview.TreeView.TreeView.GetSelection()
     if err != nil {
@@ -95,17 +120,4 @@ func (treeview *TreeView) AllInvisible() {
         ok = treeview.ListStore.IterNext(iter)
     }
     sel.SetMode(gtk.SELECTION_SINGLE)
-}
-
-func (treeview *TreeView) updatePerformer(rola *model.Rola) {
-    iter := treeview.Rows[rola.ID()]
-    treeview.ListStore.SetValue(iter, 1, rola.Artist())
-}
-
-func (treeview *TreeView) updateRow(rola *model.Rola) {
-    iter := treeview.Rows[rola.ID()]
-    treeview.ListStore.SetValue(iter, 0, rola.Title())
-    treeview.ListStore.SetValue(iter, 1, rola.Artist())
-    treeview.ListStore.SetValue(iter, 2, rola.Album())
-    treeview.ListStore.SetValue(iter, 3, rola.Genre())
 }

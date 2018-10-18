@@ -46,8 +46,8 @@ func NewGroupContent() *GroupContent {
 
 type AddMember struct {
     CurrentMemberLB *gtk.ListBox
-    grid             *gtk.Grid
-    NewMemberCBT     *gtk.ComboBoxText
+    grid            *gtk.Grid
+    NewMemberCBT    *gtk.ComboBoxText
 }
 
 func NewAddMember() *AddMember {

@@ -4,13 +4,10 @@ import (
     "strings"
 )
 
-/**
- * Una rola representa una canción lista con información suficente para ser
- * ingresada a la base de datos.   La información mínima que contiene es else {
- * nombre del intérprete, título de la rola, álbum donde aparece la rola,
- * número de la rola en el álbum, year de publicación del álbum, género de
- * la rola y path del archivo en disco.
- */
+// A Rola represents a song, it contains the information present in
+// various frames from the id3v2 tag, namely, artist, title, album
+// track number, year, genre, and additionally, the path of the song
+// file, and the id assigned by the database to the song.
 type Rola struct {
     artist string
     title  string
