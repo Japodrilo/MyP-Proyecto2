@@ -181,7 +181,7 @@ func (database *Database) AddPersonToGroup(personID, groupID int64) {
 }
 
 // AddRola takes a Rola and the IDs of the performer and album of the Rola
-// as parameters, and attemps to add the Rola to the database.   If it was
+// as parameters, and attempts to add the Rola to the database.   If it was
 // already in the database, it does nothing and returns -1.   Otherwise it
 // returns the ID asigned to the Rola by the database.
 func (database *Database) AddRola(rola *Rola, idperformer, idalbum int64) int64 {
