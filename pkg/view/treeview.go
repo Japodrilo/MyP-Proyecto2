@@ -15,7 +15,7 @@ type TreeView struct {
 	Filter    *gtk.TreeModelFilter
 }
 
-//  NewTreeView creates and returns a ne TreeView object.
+// NewTreeView creates and returns a new TreeView object.
 func NewTreeView() *TreeView {
 	tv, ls, filter := setupTreeView()
 	return &TreeView{

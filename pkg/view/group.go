@@ -59,6 +59,7 @@ type AddMember struct {
 	NewMemberCBT    *gtk.ComboBoxText
 }
 
+// NewAddMember creates a new AddMember object and returs it.
 func NewAddMember() *AddMember {
 	grid := SetupGrid(gtk.ORIENTATION_VERTICAL)
 

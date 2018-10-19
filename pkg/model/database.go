@@ -197,15 +197,16 @@ func (database *Database) AddRola(rola *Rola, idperformer, idalbum int64) int64 
                   genre)
                 SELECT ?, ?, ?, ?, ?, ?, ?
                 WHERE NOT EXISTS
-                (SELECT 1 FROM rolas WHERE title = ?
+                (SELECT 1 FROM rolas WHERE (title = ?
                   AND id_performer = ?
                   AND id_album = ?
-                  AND genre = ?)`
+                  AND genre = ?)
+				  OR path = ?)`
 
 	tx, stmt := database.PrepareStatement(stmtStr)
 	defer stmt.Close()
 
-	result, err := stmt.Exec(idperformer, idalbum, rola.Path(), rola.Title(), rola.Track(), rola.Year(), rola.Genre(), rola.Title(), idperformer, idalbum, rola.Genre())
+	result, err := stmt.Exec(idperformer, idalbum, rola.Path(), rola.Title(), rola.Track(), rola.Year(), rola.Genre(), rola.Title(), idperformer, idalbum, rola.Genre(), rola.Path())
 	if err != nil {
 		log.Fatal("could not execute insert:", err)
 	}

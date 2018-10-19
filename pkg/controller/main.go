@@ -77,6 +77,10 @@ func newPrincipal() *Principal {
 func (principal *Principal) initialize() {
 	principal.database.LoadDB()
 
+	principal.mainWindow.Buttons["about"].Connect("clicked", func() {
+		view.NewAbout()
+	})
+
 	principal.mainWindow.Buttons["new"].Connect("clicked", func() {
 		principal.addNewPerformer()
 	})
@@ -107,7 +111,7 @@ func (principal *Principal) initialize() {
 	})
 
 	principal.mainWindow.SearchEntry.Connect("activate", func() {
-		text := view.GetTextEntryClean(principal.mainWindow.SearchEntry)
+		text := view.GetTextSearchEntry(principal.mainWindow.SearchEntry)
 		principal.searchAction(text)
 	})
 

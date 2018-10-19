@@ -31,7 +31,6 @@ func SetupMainWindow() *MainWindow {
 	tb := SetupToolbar()
 	tb2 := SetupToolbar()
 	se := SetupSearchEntry()
-	play := SetupToolButtonIcon("gtk-media-play-ltr")
 	edit := SetupToolButtonIcon("gtk-edit")
 	performers := SetupToolButtonIcon("gtk-open")
 	new := SetupToolButtonIcon("gtk-new")
@@ -61,7 +60,6 @@ func SetupMainWindow() *MainWindow {
 	boxinfo.Add(albumLabel)
 
 	tb.Add(populate)
-	tb.Add(play)
 	tb.Add(edit)
 	tb.Add(performers)
 	tb.Add(new)
@@ -70,7 +68,6 @@ func SetupMainWindow() *MainWindow {
 	tb2.Add(about)
 
 	buttons["populate"] = populate
-	buttons["play"] = play
 	buttons["edit"] = edit
 	buttons["performers"] = performers
 	buttons["new"] = new
