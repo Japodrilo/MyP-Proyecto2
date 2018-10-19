@@ -12,11 +12,16 @@ import (
     _ "github.com/mattn/go-sqlite3"
 )
 
+// A Database is the intermediary between the sql database and
+// the rest of the model and the view.
 type Database struct {
     Database *sql.DB
     cache    string
 }
 
+// NewDatabase creates a new Database object, checking whether a .db
+// file already exists and opening a connection to it, or creating a
+// new one.   The database is saved in the file "~/.cache/rolas/rolas.db"
 func NewDatabase() (*Database, bool) {
     home, err := user.Current()
     if err != nil {
@@ -40,6 +45,10 @@ func NewDatabase() (*Database, bool) {
     return DB, fileExists
 }
 
+// AddAlbum takes a Rola as a parameter, adds its album to the database
+// and returns the ID number of the album in the database.   If the album
+// was already in the database, this method does nothing and returns the
+// ID of the album in the database.
 func (database *Database) AddAlbum(rola *Rola) int64 {
     idalbum := database.ExistsAlbum(filepath.Dir(rola.Path()), rola.Album())
     if idalbum > 0 {
@@ -70,6 +79,10 @@ func (database *Database) AddAlbum(rola *Rola) int64 {
     return lastId
 }
 
+// AddGroup takes a Rola as a parameter, adds its performer, which has been
+// already verified to be a group, to the database, and returns the ID
+// of the group in the database. If the group is already in the database, this
+// method does nothing and returns the group ID in the database.
 func (database *Database) AddGroup(groupName, start, end string) int64 {
     stmtStr := `INSERT INTO groups (
                  name,
@@ -92,6 +105,11 @@ func (database *Database) AddGroup(groupName, start, end string) int64 {
     return lastId
 }
 
+// AddPerformer takes a Rola as a parameter, adds its performer to the
+// database, and returns the ID number of the performer in the database. The
+// performer is added with type 2 (not known if it is a person of a group).
+// If the performer is already in the database, this method does nothing
+// and returns the performer ID in the database.
 func (database *Database) AddPerformer(rola *Rola) int64 {
     idp := database.ExistsPerformer(rola.Artist())
     if idp > 0 {
@@ -121,6 +139,10 @@ func (database *Database) AddPerformer(rola *Rola) int64 {
     return lastId
 }
 
+// AddPerson takes a Rola as a parameter, adds its performer, which has been
+// already verified to be a person, to the database, and returns the ID
+// of the person in the database. If the person is already in the database,
+// this method does nothing and returns the person ID in the database.
 func (database *Database) AddPerson(stageName, realName, birth, death string) {
     stmtStr := `INSERT INTO persons (
                   stage_name,
@@ -139,6 +161,9 @@ func (database *Database) AddPerson(stageName, realName, birth, death string) {
     tx.Commit()
 }
 
+// AddPersonToGroup receives the ID of a person and group in the database,
+// respectively, and adds them to the in_group table, i.e., adds the person
+// to the group.
 func (database *Database) AddPersonToGroup(personID, groupID int64) {
     stmtStr := "INSERT INTO in_group (" +
                " id_person, " +
@@ -155,6 +180,10 @@ func (database *Database) AddPersonToGroup(personID, groupID int64) {
     tx.Commit()
 }
 
+// AddRola takes a Rola and the IDs of the performer and album of the Rola
+// as parameters, and attemps to add the Rola to the database.   If it was
+// already in the database, it does nothing and returns -1.   Otherwise it
+// returns the ID asigned to the Rola by the database.
 func (database *Database) AddRola(rola *Rola, idperformer, idalbum int64) int64 {
     stmtStr := `INSERT
                 INTO rolas (
@@ -194,6 +223,9 @@ func (database *Database) AddRola(rola *Rola, idperformer, idalbum int64) int64 
     return -1
 }
 
+// AllGroups queries the database and returns a map whose keys are the names
+// of all the groups in the database, and the corresponding values are the
+// IDs of the groups.
 func (database *Database) AllGroups() map[string]int64 {
     groups := make(map[string]int64)
     rows, err := database.Database.Query("SELECT id_group, name FROM groups")
@@ -217,6 +249,9 @@ func (database *Database) AllGroups() map[string]int64 {
     return groups
 }
 
+// AllPersons queries the database and returns a map whose keys are the names
+// of all the persons in the database, and the corresponding values are the
+// IDs of the persons.
 func (database *Database) AllPersons() map[string]int64 {
     persons := make(map[string]int64)
     rows, err := database.Database.Query("SELECT id_person, stage_name FROM persons")
@@ -242,8 +277,6 @@ func (database *Database) AllPersons() map[string]int64 {
 
 // CreateDB creates the tables specified in the rolas.sql file.
 func(database *Database) CreateDB() {
-    //os.Remove(database.cache + "/rolas.db")
-
     dot, err := dotsql.LoadFromFile("../data/rolas.sql")
     if err != nil {
 		log.Fatal("could not load rolas.sql: ", err)
@@ -273,6 +306,8 @@ func(database *Database) CreateDB() {
     }
 }
 
+// ExistsAlbum takes an album's path and name, and returns the album ID in
+// the database, or 0 if the album is not in the database.
 func (database *Database) ExistsAlbum(albumPath, name string) int64 {
     stmtStr := "SELECT id_album FROM albums WHERE albums.path = ? AND albums.name = ? LIMIT 1"
     tx, stmt, rows := database.PreparedQuery(stmtStr, albumPath, name)
@@ -294,6 +329,8 @@ func (database *Database) ExistsAlbum(albumPath, name string) int64 {
     return id
 }
 
+// ExistsGroup takes a group's name as an argument and returns the group
+// ID in the database, or 0 if the group is not in the database.
 func (database *Database) ExistsGroup(groupName string) int64 {
     stmtStr := "SELECT " +
                " id_group " +
@@ -321,6 +358,8 @@ func (database *Database) ExistsGroup(groupName string) int64 {
     return id
 }
 
+// ExistsPerformer takes a performer's name as an argument and returns the
+// performer ID in the database, or 0 if the performer is not in the database.
 func (database *Database) ExistsPerformer(performerName string) int64 {
     stmtStr := `SELECT
                   id_performer
@@ -346,6 +385,8 @@ func (database *Database) ExistsPerformer(performerName string) int64 {
     return id
 }
 
+// ExistsPerson takes a person's name and returns the person ID in the
+// database, or 0 if the album is not in the database.
 func (database *Database) ExistsPerson(stageName string) int64 {
     stmtStr := "SELECT " +
                " id_person " +
@@ -373,6 +414,7 @@ func (database *Database) ExistsPerson(stageName string) int64 {
     return id
 }
 
+// LoadDB pings the database to verify if the connection is active.
 func (database *Database) LoadDB() {
     err := database.Database.Ping()
     if err != nil {
@@ -380,6 +422,9 @@ func (database *Database) LoadDB() {
     }
 }
 
+// PreparedQuery executes a prepared query and returns the resulting rows,
+// it handles the errors and returns the context and prepared statement
+// for the user to close them.
 func (database *Database) PreparedQuery(statement string, args ...interface{}) (*sql.Tx, *sql.Stmt, *sql.Rows) {
     tx, stmt := database.PrepareStatement(statement)
     rows, err := stmt.Query(args...)
@@ -389,6 +434,8 @@ func (database *Database) PreparedQuery(statement string, args ...interface{}) (
     return tx, stmt, rows
 }
 
+// PrepareStatement initializes an sqlite prepared statement from a string
+// and returns the corresponding sql context and prepared statement.
 func (database *Database) PrepareStatement(statement string) (*sql.Tx, *sql.Stmt) {
     tx, err := database.Database.Begin()
 	if err != nil {
@@ -401,6 +448,8 @@ func (database *Database) PrepareStatement(statement string) (*sql.Tx, *sql.Stmt
     return tx, stmt
 }
 
+// QueryCustom receives a parsed string in disjunctive normal form and
+// executes the corresponding query.
 func (database *Database) QueryCustom(stmtStr string, terms ...interface{}) []int64 {
     result := make([]int64, 0)
 
@@ -424,6 +473,8 @@ func (database *Database) QueryCustom(stmtStr string, terms ...interface{}) []in
     return result
 }
 
+// QueryGroup receives a group ID and returns its name, start_date and
+// end_date. It is assumed that the group is in the database.
 func (database *Database) QueryGroup(groupID int64) (string, string, string){
     stmtStr := "SELECT " +
                " name, " +
@@ -460,6 +511,10 @@ func (database *Database) QueryGroup(groupID int64) (string, string, string){
     return name, start, end
 }
 
+// QueryGroupMembers receives a group ID as a parameter and returns a map
+// having the group members' names as keys and the value is true if the
+// person is a member of the group.   It is assumed that the group is in
+// the database.
 func (database *Database) QueryGroupMembers(groupID int64) map[string]bool {
     members := make(map[string]bool)
     stmtStr := "SELECT " +
@@ -495,6 +550,8 @@ func (database *Database) QueryGroupMembers(groupID int64) map[string]bool {
     return members
 }
 
+// QueryPerformerType receives a performer's ID as an argument and returns
+// its type and name.   It is assumed that the performer is in the database.
 func (database *Database) QueryPerformerType(id int64) (int, string) {
     stmtStr := "SELECT " +
                " performers.id_type, " +
@@ -530,6 +587,9 @@ func (database *Database) QueryPerformerType(id int64) (int, string) {
     return performerType, name
 }
 
+// QueryPerson receives a person's ID as an argument and returns its
+// stage_name, real_name, birth_date and death_date, all as strings.   It
+// is assumed that the person is in the database.
 func (database *Database) QueryPerson(personID int64) (string, string, string, string){
     stmtStr := "SELECT " +
                " stage_name, " +
@@ -568,6 +628,9 @@ func (database *Database) QueryPerson(personID int64) (string, string, string, s
     return stageName, realName, birth, death
 }
 
+// QueryPersonGroups takes a person's ID as an argument and returns a map
+// whose keys are the groups where the person is a member, and the values
+// are all true.   It is assumed that the person is in the database.
 func (database *Database) QueryPersonGroups(personID int64) map[string]bool {
     groups := make(map[string]bool)
     stmtStr := "SELECT " +
@@ -603,7 +666,9 @@ func (database *Database) QueryPersonGroups(personID int64) map[string]bool {
     return groups
 }
 
-
+// QueryRola receives a Rola's ID as an argument and returns the correspoding
+// rola, but with an empty path.   It is assumed that the rola is in the
+// database.
 func (database *Database) QueryRola(rolaID int64) *Rola {
     stmtStr := "SELECT " +
                " performers.name, " +
@@ -656,8 +721,8 @@ func (database *Database) QueryRola(rolaID int64) *Rola {
              }
 }
 
-
-
+// QueryRolaForeign takes a Rola's ID as an argument and returns the
+// IDs associated to its performer and album.
 func (database *Database) QueryRolaForeign(rolaID int64) (int64, int64) {
     stmtStr := "SELECT " +
                " id_performer, " +
@@ -692,6 +757,9 @@ func (database *Database) QueryRolaForeign(rolaID int64) (int64, int64) {
     return performerID, albumID
 }
 
+// QuerySimple receives a string as an argument, and returns a slice with
+// the IDs of all the Rolas containing the string in its performer name,
+// album name, title, or genre.
 func (database *Database) QuerySimple(wildcard string) []int64 {
     result := make([]int64, 0)
     stmtStr := "SELECT " +
@@ -727,6 +795,9 @@ func (database *Database) QuerySimple(wildcard string) []int64 {
     return result
 }
 
+// UpdateGroup receives new values for the fields of a group, together with the
+// group's ID, and updates the information. It is assumed that the group is
+// in the database.
 func (database *Database) UpdateGroup(name, start, end string, groupID int64) {
     stmtStr := "UPDATE groups " +
                "SET name = ?, " +
@@ -744,6 +815,9 @@ func (database *Database) UpdateGroup(name, start, end string, groupID int64) {
     tx.Commit()
 }
 
+// UpdatePerformerType receives a performer's ID and a performer's type
+// (0, 1, 2), to set the new peformer's type.   It is assumed that the
+// performer is in the database.
 func (database *Database) UpdatePerformerType(performerID int64, performerType int) {
     stmtStr := "UPDATE performers " +
                "SET id_type = ? " +
@@ -760,6 +834,9 @@ func (database *Database) UpdatePerformerType(performerID int64, performerType i
     tx.Commit()
 }
 
+// UpdatePerson receives new values for the fields of a person,
+// together with the person's ID, and updates the information.   It is
+// assumed that the person is in the database.
 func (database *Database) UpdatePerson(stageName, realName, birth, death string, personID int64) {
     stmtStr := "UPDATE persons " +
                "SET stage_name = ?, " +
@@ -778,6 +855,9 @@ func (database *Database) UpdatePerson(stageName, realName, birth, death string,
     tx.Commit()
 }
 
+// UpdateRola takes a Rola as an argument and updates all its fields in
+// the database.   It is assumed that the Rola taken as argument has the
+// same ID as the rola we want to update.
 func (database *Database) UpdateRola(rola *Rola) {
     stmtStr := "UPDATE rolas " +
                "SET title = ?, " +

@@ -23,9 +23,9 @@ import(
 	"github.com/gotk3/gotk3/glib"
 )
 
-// Main window controller.   It contains as fields a database from
-// the model package, a MainWindow object from the view package,
-// a tree view, and the tree selection of the former.
+// Principal is the main window controller. It contains as fields
+// a database from the model package, a MainWindow object from the
+// view package, a tree view, and the tree selection of the former.
 type Principal struct {
     database   *model.Database
     mainWindow *view.MainWindow
@@ -33,7 +33,7 @@ type Principal struct {
     treeSel    *gtk.TreeSelection
 }
 
-// Structure holding the information of a Rola to show in the bottom
+// A SongInfo holds the information of a Rola to show in the bottom
 // of the main window, including the image obtained from the ID3v2 tag.
 type SongInfo struct {
     image  *gtk.Image
@@ -42,18 +42,26 @@ type SongInfo struct {
     album  string
 }
 
-// Function that creates and draws the main window for the application.
-// This is the function used to generate the binary for the application.
+// MainWindow creates and draws the main window for the application.
+// This is the function used in the 'main' package.
 func MainWindow() {
-	principal := NewPrincipal()
+	principal := newPrincipal()
+	principal.initialize()
     principal.mainWindow.Win.ShowAll()
 }
 
-func NewPrincipal() *Principal {
+func newPrincipal() *Principal {
     database, exists := model.NewDatabase()
 	mainWindow := view.SetupMainWindow()
     treeview := NewTreeView(mainWindow.TreeView)
-    sel, _ := treeview.TreeView.TreeView.GetSelection()
+    sel, err := treeview.TreeView.TreeView.GetSelection()
+	if err != nil {
+		log.Fatal("could not retrieve the treeview selection:", err)
+	}
+
+	if !exists {
+        database.CreateDB()
+    }
 
     principal := &Principal{
         database:   database,
@@ -61,48 +69,50 @@ func NewPrincipal() *Principal {
 		treeview:   treeview,
         treeSel:    sel,
 	}
-
-    if !exists {
-        database.CreateDB()
-    }
-
-    database.LoadDB()
-
-    mainWindow.Buttons["new"].Connect("clicked", func() {
-        principal.AddNewPerformer()
-    })
-
-    mainWindow.Buttons["performers"].Connect("clicked", func() {
-        principal.EditForeignPerformer()
-    })
-
-    sel.Connect("changed", func() {principal.selectionChanged(sel)})
-
-    treeview.TreeView.TreeView.Connect("row-activated", func() {principal.rowActivated()})
-
-    mainWindow.Buttons["populate"].Connect("clicked", func() {
-        principal.treeSel.UnselectAll()
-        principal.treeSel.SetMode(gtk.SELECTION_NONE)
-		principal.Repopulate()
-        mainWindow.Buttons["populate"].SetSensitive(false)
-		time.Sleep(100 * time.Nanosecond)
-        principal.Populate()
-    })
-
-    mainWindow.Buttons["edit"].Connect("clicked", func() {
-        principal.EditPerformer()
-    })
-
-    mainWindow.SearchEntry.Connect("activate", func() {
-        text := view.GetTextEntryClean(mainWindow.SearchEntry)
-        principal.SearchAction(text)
-    })
-
-    principal.mainWindow.Win.ShowAll()
 	return principal
 }
 
-func (principal *Principal) AddNewPerformer() {
+func (principal *Principal) initialize() {
+    principal.database.LoadDB()
+
+    principal.mainWindow.Buttons["new"].Connect("clicked", func() {
+        principal.addNewPerformer()
+    })
+
+    principal.mainWindow.Buttons["performers"].Connect("clicked", func() {
+        principal.editForeignPerformer()
+    })
+
+    principal.treeSel.Connect("changed", func() {
+		principal.selectionChanged(principal.treeSel)
+	})
+
+    principal.treeview.TreeView.TreeView.Connect("row-activated", func() {
+		principal.rowActivated()
+	})
+
+    principal.mainWindow.Buttons["populate"].Connect("clicked", func() {
+        principal.treeSel.UnselectAll()
+        principal.treeSel.SetMode(gtk.SELECTION_NONE)
+		principal.repopulate()
+        principal.mainWindow.Buttons["populate"].SetSensitive(false)
+		time.Sleep(100 * time.Nanosecond)
+        principal.populate()
+    })
+
+    principal.mainWindow.Buttons["edit"].Connect("clicked", func() {
+        principal.editPerformer()
+    })
+
+    principal.mainWindow.SearchEntry.Connect("activate", func() {
+        text := view.GetTextEntryClean(principal.mainWindow.SearchEntry)
+        principal.searchAction(text)
+    })
+
+    principal.mainWindow.Win.ShowAll()
+}
+
+func (principal *Principal) addNewPerformer() {
     performerPopUp := view.EditPerformerWindow()
     performerPopUp.Win.SetTitle("New Performer")
     performerPopUp.SaveB.Connect("clicked", func() {
@@ -117,7 +127,7 @@ func (principal *Principal) AddNewPerformer() {
     })
 }
 
-func (principal *Principal) Populate() {
+func (principal *Principal) populate() {
     miner := model.NewMiner()
     miner.Traverse()
     go miner.Extract()
@@ -127,12 +137,10 @@ func (principal *Principal) Populate() {
     go principal.populateOnTheFly(miner)
 }
 
-func (principal *Principal) Repopulate() {
+func (principal *Principal) repopulate() {
     principal.database.LoadDB()
     principal.populateFromExistingDB(principal.database)
 }
-
-
 
 func (principal *Principal) rowTextValues() []string {
     values := make([]string, 0)
@@ -199,7 +207,7 @@ func (principal *Principal) selectionChanged(s *gtk.TreeSelection) {
             err = jpeg.Encode(file, loadedImage, nil)
             pix, _ := gdk.PixbufNewFromFileAtScale(cache + "/image.jpg", 250, 250, false)
             image, _ := gtk.ImageNewFromPixbuf(pix)
-            glib.IdleAdd(principal.AttachInfo, &SongInfo{image, items[0], items[1], items[2]})
+            glib.IdleAdd(principal.attachInfo, &SongInfo{image, items[0], items[1], items[2]})
             if err != nil {
                 log.Fatal("could not encode the image to jpeg")
             }
@@ -209,7 +217,7 @@ func (principal *Principal) selectionChanged(s *gtk.TreeSelection) {
     }
 }
 
-func (principal *Principal) EditPerformer() {
+func (principal *Principal) editPerformer() {
     rowValues := principal.rowTextValues()
     if len(rowValues) == 0 {
         return
@@ -312,7 +320,7 @@ func (principal *Principal) EditPerformer() {
     }
 }
 
-func (principal *Principal) EditForeignPerformer() {
+func (principal *Principal) editForeignPerformer() {
     var groupID int64
     var groupName string
     var personID int64
@@ -381,7 +389,7 @@ func (principal *Principal) populateOnTheFly(miner *model.Miner) {
     principal.treeSel.SetMode(gtk.SELECTION_SINGLE)
 }
 
-func (principal *Principal) SearchAction(wildcard string) {
+func (principal *Principal) searchAction(wildcard string) {
     principal.treeSel.UnselectAll()
     principal.treeview.AllInvisible()
     parser := model.GetParser()
@@ -517,11 +525,11 @@ func (principal *Principal) showRolaContent(content *view.RolaContent, rola *mod
 func (principal *Principal) defaultImage(title, artist, album string) {
     pix, _ := gdk.PixbufNewFromFileAtScale("../data/noimage.png", 250, 250, false)
     image, _ := gtk.ImageNewFromPixbuf(pix)
-    glib.IdleAdd(principal.AttachInfo, &SongInfo{image, title, artist, album})
+    glib.IdleAdd(principal.attachInfo, &SongInfo{image, title, artist, album})
     glib.IdleAdd(principal.mainWindow.Win.ShowAll, )
 }
 
-func (principal *Principal) AttachInfo(songInfo *SongInfo) {
+func (principal *Principal) attachInfo(songInfo *SongInfo) {
     previous, err := principal.mainWindow.Grid.GetChildAt(0,0)
     if err != nil {
         log.Fatal("unable to get child from grid:", err)
