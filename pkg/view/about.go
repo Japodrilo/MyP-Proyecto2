@@ -1,4 +1,4 @@
-// View of the application, all the windows are built in this package.
+// Package view of the application, all the windows are built in this package.
 package view
 
 import (

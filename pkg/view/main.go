@@ -59,7 +59,7 @@ func SetupMainWindow() *MainWindow {
 	if !fileExists {
 		RestoreAsset(cache, "noimage.png")
 	}
-	pix, _ := gdk.PixbufNewFromFileAtScale(cache + "/noimage.png", 250, 250, true)
+	pix, _ := gdk.PixbufNewFromFileAtScale(cache+"/noimage.png", 250, 250, true)
 	defaultImage, _ := gtk.ImageNewFromPixbuf(pix)
 
 	se.SetHExpand(true)

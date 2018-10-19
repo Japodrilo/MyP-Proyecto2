@@ -1,4 +1,4 @@
-// Model of the application, mainly the database, miner and parser.
+// Package model of the application, mainly the database, miner and parser.
 package model
 
 import (
@@ -36,7 +36,7 @@ func NewDatabase() (*Database, bool) {
 	if _, err := os.Stat(cache + "/rolas.db"); os.IsNotExist(err) {
 		fileExists = false
 	}
-	db, err := sql.Open("sqlite3", cache + "/rolas.db")
+	db, err := sql.Open("sqlite3", cache+"/rolas.db")
 	if err != nil {
 		log.Fatal("could not open the database: ", err)
 	}

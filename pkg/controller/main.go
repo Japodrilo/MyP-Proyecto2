@@ -1,4 +1,4 @@
-// Integrates the model with the view.
+// Package controller integrates the model with the view.
 package controller
 
 import (
@@ -527,7 +527,7 @@ func (principal *Principal) defaultImage(title, artist, album string) {
 		log.Fatal("could not retrieve the current user:", err)
 	}
 	cache := home.HomeDir + "/.cache/rolas"
-	pix, _ := gdk.PixbufNewFromFileAtScale(cache + "/noimage.png", 250, 250, false)
+	pix, _ := gdk.PixbufNewFromFileAtScale(cache+"/noimage.png", 250, 250, false)
 	image, _ := gtk.ImageNewFromPixbuf(pix)
 	glib.IdleAdd(principal.attachInfo, &SongInfo{image, title, artist, album})
 	glib.IdleAdd(principal.mainWindow.Win.ShowAll)

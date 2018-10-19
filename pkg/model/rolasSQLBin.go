@@ -177,6 +177,7 @@ type bintree struct {
 	Func     func() (*asset, error)
 	Children map[string]*bintree
 }
+
 var _bintree = &bintree{nil, map[string]*bintree{
 	"rolas.sql": &bintree{rolasSql, map[string]*bintree{}},
 }}
