@@ -179,7 +179,7 @@ type bintree struct {
 }
 
 var _bintree = &bintree{nil, map[string]*bintree{
-	"noimage.png": &bintree{noimagePng, map[string]*bintree{}},
+	"noimage.png": {noimagePng, map[string]*bintree{}},
 }}
 
 // RestoreAsset restores an asset under the given directory
