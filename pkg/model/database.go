@@ -293,7 +293,7 @@ func (database *Database) CreateDB() {
 		RestoreAsset(cache, "rolas.sql")
 	}
 
-	dot, err := dotsql.LoadFromFile(cache + "/data/rolas.sql")
+	dot, err := dotsql.LoadFromFile(cache + "/rolas.sql")
 	if err != nil {
 		log.Fatal("could not load rolas.sql: ", err)
 	}
