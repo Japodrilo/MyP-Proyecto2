@@ -1,3 +1,4 @@
+// Integrates the model with the view.
 package controller
 
 import (

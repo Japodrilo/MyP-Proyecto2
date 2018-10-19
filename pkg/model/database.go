@@ -1,3 +1,4 @@
+// Model of the application, mainly the database, miner and parser.
 package model
 
 import (
