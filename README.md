@@ -1,4 +1,7 @@
 # MyP-Proyecto2
+[![GoDoc](https://godoc.org/github.com/Japodrilo/MyP-Proyecto2?status.svg)](https://godoc.org/github.com/Japodrilo/MyP-Proyecto2)
+[![Go Report Card](https://goreportcard.com/badge/github.com/Japodrilo/MyP-Proyecto2)](https://goreportcard.com/report/github.com/Japodrilo/MyP-Proyecto2)
+
 Repositorio para el Proyecto 2 en Modelado y Programación
 
 El proyecto consiste en un reproductor de mp3 con acceso a una base de datos que
