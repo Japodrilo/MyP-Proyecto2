@@ -2,7 +2,6 @@ package controller
 
 import (
 	"bytes"
-	"fmt"
 	"image"
 	// Needed for decoding gif images with image
 	_ "image/gif"
@@ -185,13 +184,6 @@ func (principal *Principal) selectionChanged(s *gtk.TreeSelection) {
 	items := principal.rowTextValues()
 	if len(items) == 0 {
 		return
-	}
-	for i := 0; i < 4; i++ {
-		if i < 3 {
-			fmt.Print(items[i] + " - ")
-		} else {
-			fmt.Println(items[i])
-		}
 	}
 	file, err := os.Open(items[4])
 	if err != nil {

@@ -49,6 +49,14 @@ func GetTextEntryClean(entry *gtk.SearchEntry) string {
 	return text + "\n"
 }
 
+func GetTextSearchEntry(entry *gtk.SearchEntry) string {
+	text, err := entry.GetText()
+	if err != nil {
+		log.Fatal("Unable to get text from buffer:", err)
+	}
+	return text
+}
+
 func SetupBox() *gtk.Box {
 	box, err := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
 	if err != nil {
