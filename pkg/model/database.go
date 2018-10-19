@@ -36,7 +36,7 @@ func NewDatabase() (*Database, bool) {
 	if _, err := os.Stat(cache + "/rolas.db"); os.IsNotExist(err) {
 		fileExists = false
 	}
-	db, err := sql.Open("sqlite3", cache+"/rolas.db")
+	db, err := sql.Open("sqlite3", cache + "/rolas.db")
 	if err != nil {
 		log.Fatal("could not open the database: ", err)
 	}
@@ -280,7 +280,20 @@ func (database *Database) AllPersons() map[string]int64 {
 
 // CreateDB creates the tables specified in the rolas.sql file.
 func (database *Database) CreateDB() {
-	dot, err := dotsql.LoadFromFile("../data/rolas.sql")
+	home, err := user.Current()
+	if err != nil {
+		log.Fatal("could not retrieve the current user:", err)
+	}
+	cache := home.HomeDir + "/.cache/rolas"
+	fileExists := true
+	if _, err := os.Stat(cache + "/rolas.sql"); os.IsNotExist(err) {
+		fileExists = false
+	}
+	if !fileExists {
+		RestoreAsset(cache, "rolas.sql")
+	}
+
+	dot, err := dotsql.LoadFromFile(cache + "/data/rolas.sql")
 	if err != nil {
 		log.Fatal("could not load rolas.sql: ", err)
 	}

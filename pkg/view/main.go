@@ -1,6 +1,10 @@
 package view
 
 import (
+	"log"
+	"os"
+	"os/user"
+
 	"github.com/gotk3/gotk3/gdk"
 	"github.com/gotk3/gotk3/gtk"
 )
@@ -43,7 +47,19 @@ func SetupMainWindow() *MainWindow {
 	space2 := SetupLabel("                       ")
 	space3 := SetupLabel("                       ")
 
-	pix, _ := gdk.PixbufNewFromFileAtScale("../data/noimage.png", 250, 250, true)
+	home, err := user.Current()
+	if err != nil {
+		log.Fatal("could not retrieve the current user:", err)
+	}
+	cache := home.HomeDir + "/.cache/rolas"
+	fileExists := true
+	if _, err := os.Stat(cache + "/noimage.png"); os.IsNotExist(err) {
+		fileExists = false
+	}
+	if !fileExists {
+		RestoreAsset(cache, "noimage.png")
+	}
+	pix, _ := gdk.PixbufNewFromFileAtScale(cache + "/noimage.png", 250, 250, true)
 	defaultImage, _ := gtk.ImageNewFromPixbuf(pix)
 
 	se.SetHExpand(true)

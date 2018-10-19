@@ -522,7 +522,12 @@ func (principal *Principal) showRolaContent(content *view.RolaContent, rola *mod
 }
 
 func (principal *Principal) defaultImage(title, artist, album string) {
-	pix, _ := gdk.PixbufNewFromFileAtScale("../data/noimage.png", 250, 250, false)
+	home, err := user.Current()
+	if err != nil {
+		log.Fatal("could not retrieve the current user:", err)
+	}
+	cache := home.HomeDir + "/.cache/rolas"
+	pix, _ := gdk.PixbufNewFromFileAtScale(cache + "/noimage.png", 250, 250, false)
 	image, _ := gtk.ImageNewFromPixbuf(pix)
 	glib.IdleAdd(principal.attachInfo, &SongInfo{image, title, artist, album})
 	glib.IdleAdd(principal.mainWindow.Win.ShowAll)
