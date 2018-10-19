@@ -166,7 +166,7 @@ func SetupPopupWindow(title string, width, height int) *gtk.Window {
 	return win
 }
 
-// SetupScrolled Window creates a new gtk.ScrolledWindow object,
+// SetupScrolledWindow creates a new gtk.ScrolledWindow object,
 // sets its Policy to (1,1), HExpand to true, and returns it.
 // It includes error handling.
 func SetupScrolledWindow() *gtk.ScrolledWindow {
