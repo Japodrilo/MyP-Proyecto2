@@ -1,25 +1,28 @@
 package view
 
 import (
-    "log"
+	"log"
 
-    "github.com/gotk3/gotk3/glib"
-    "github.com/gotk3/gotk3/gtk"
+	"github.com/gotk3/gotk3/glib"
+	"github.com/gotk3/gotk3/gtk"
 )
 
+// TreeView represents the tree view with the list of Rolas in the
+// main window of the package.
 type TreeView struct {
-    TreeView  *gtk.TreeView
-    ListStore *gtk.ListStore
-    Filter    *gtk.TreeModelFilter
+	TreeView  *gtk.TreeView
+	ListStore *gtk.ListStore
+	Filter    *gtk.TreeModelFilter
 }
 
+//  NewTreeView creates and returns a ne TreeView object.
 func NewTreeView() *TreeView {
-    tv, ls, filter := setupTreeView()
-    return &TreeView{
-        TreeView:        tv,
-        ListStore:       ls,
-        Filter:          filter,
-    }
+	tv, ls, filter := setupTreeView()
+	return &TreeView{
+		TreeView:  tv,
+		ListStore: ls,
+		Filter:    filter,
+	}
 
 }
 
@@ -27,11 +30,11 @@ func NewTreeView() *TreeView {
 const (
 	COLUMN_TITLE = iota
 	COLUMN_ARTIST
-    COLUMN_ALBUM
-    COLUMN_GENRE
-    COLUMN_PATH
-    COLUMN_VISIBLE
-    COLUMN_ID
+	COLUMN_ALBUM
+	COLUMN_GENRE
+	COLUMN_PATH
+	COLUMN_VISIBLE
+	COLUMN_ID
 )
 
 // Add a column to the tree view (during the initialization of the tree view)
@@ -52,7 +55,7 @@ func createColumn(title string, id int) *gtk.TreeViewColumn {
 // Add a column to the tree view (during the initialization of the tree view)
 func createInvisibleColumn(title string, id int) *gtk.TreeViewColumn {
 	column := createColumn(title, id)
-    column.SetVisible(false)
+	column.SetVisible(false)
 	return column
 }
 
@@ -67,23 +70,22 @@ func setupTreeView() (*gtk.TreeView, *gtk.ListStore, *gtk.TreeModelFilter) {
 
 	treeView.AppendColumn(createColumn("Title", COLUMN_TITLE))
 	treeView.AppendColumn(createColumn("Artist", COLUMN_ARTIST))
-    treeView.AppendColumn(createColumn("Album", COLUMN_ALBUM))
-    treeView.AppendColumn(createColumn("Genre", COLUMN_GENRE))
-    treeView.AppendColumn(createInvisibleColumn("Path", COLUMN_PATH))
-    treeView.AppendColumn(createInvisibleColumn("Visible", COLUMN_VISIBLE))
-    treeView.AppendColumn(createInvisibleColumn("ID", COLUMN_ID))
-
+	treeView.AppendColumn(createColumn("Album", COLUMN_ALBUM))
+	treeView.AppendColumn(createColumn("Genre", COLUMN_GENRE))
+	treeView.AppendColumn(createInvisibleColumn("Path", COLUMN_PATH))
+	treeView.AppendColumn(createInvisibleColumn("Visible", COLUMN_VISIBLE))
+	treeView.AppendColumn(createInvisibleColumn("ID", COLUMN_ID))
 
 	listStore, err := gtk.ListStoreNew(glib.TYPE_STRING, glib.TYPE_STRING, glib.TYPE_STRING, glib.TYPE_STRING, glib.TYPE_STRING, glib.TYPE_BOOLEAN, glib.TYPE_INT)
 	if err != nil {
 		log.Fatal("Unable to create list store:", err)
 	}
-    filter, err := listStore.FilterNew(nil)
-    if err != nil {
+	filter, err := listStore.FilterNew(nil)
+	if err != nil {
 		log.Fatal("Unable to create filter:", err)
 	}
-    filter.SetVisibleColumn(5)
-    treeView.SetModel(filter)
+	filter.SetVisibleColumn(5)
+	treeView.SetModel(filter)
 
 	return treeView, listStore, filter
 }

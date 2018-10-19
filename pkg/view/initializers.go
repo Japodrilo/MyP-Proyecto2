@@ -1,6 +1,6 @@
 package view
 
-import(
+import (
 	"log"
 
 	"github.com/gotk3/gotk3/gtk"
@@ -45,7 +45,7 @@ func GetTextEntryClean(entry *gtk.SearchEntry) string {
 		log.Fatal("Unable to get text from buffer:", err)
 	}
 	buffer := GetBufferEntry(entry)
-	buffer.DeleteText(0,-1)
+	buffer.DeleteText(0, -1)
 	return text + "\n"
 }
 
@@ -94,7 +94,7 @@ func SetupLabel(text string) *gtk.Label {
 	if err != nil {
 		log.Fatal("Unable to create label:", err)
 	}
-    label.SetXAlign(0)
+	label.SetXAlign(0)
 	return label
 }
 
@@ -111,8 +111,8 @@ func SetupListBoxRowLabel(text string) *gtk.ListBoxRow {
 	if err != nil {
 		log.Fatal("Unable to create List Box Row:", err)
 	}
-    label := SetupLabel(text)
-    lbr.Add(label)
+	label := SetupLabel(text)
+	lbr.Add(label)
 	return lbr
 }
 
@@ -143,7 +143,7 @@ func SetupScrolledWindow() *gtk.ScrolledWindow {
 	if err != nil {
 		log.Fatal("Unable to create scrolled window:", err)
 	}
-	scrwin.SetPolicy(1,1)
+	scrwin.SetPolicy(1, 1)
 	scrwin.SetHExpand(true)
 	return scrwin
 }
@@ -173,10 +173,10 @@ func SetupToolbar() *gtk.Toolbar {
 }
 
 func SetupToolButtonIcon(iconName string) *gtk.ToolButton {
-    image,err := gtk.ImageNewFromIconName(iconName, gtk.ICON_SIZE_BUTTON)
-    if err != nil {
-        log.Fatal("Unable to create image:", err)
-    }
+	image, err := gtk.ImageNewFromIconName(iconName, gtk.ICON_SIZE_BUTTON)
+	if err != nil {
+		log.Fatal("Unable to create image:", err)
+	}
 	btn, err := gtk.ToolButtonNew(image, "")
 	if err != nil {
 		log.Fatal("Unable to create button:", err)

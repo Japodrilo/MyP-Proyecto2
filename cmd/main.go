@@ -5,13 +5,13 @@ package main
 import "C"
 
 import (
-    "github.com/gotk3/gotk3/gtk"
-    "github.com/Japodrilo/MyP-Proyecto2/pkg/controller"
+	"github.com/Japodrilo/MyP-Proyecto2/pkg/controller"
+	"github.com/gotk3/gotk3/gtk"
 )
 
 func main() {
 	C.XInitThreads()
-    gtk.Init(nil)
-    controller.MainWindow()
-    gtk.Main()
+	gtk.Init(nil)
+	controller.MainWindow()
+	gtk.Main()
 }

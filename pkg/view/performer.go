@@ -9,44 +9,44 @@ import (
 // the necessary fields that the controller will use to connect it with
 // the model.
 type EditPerformer struct {
-    GroupContent  *GroupContent
-    Notebook      *gtk.Notebook
-    PersonContent *PersonContent
-    SaveB         *gtk.ToolButton
-    Win           *gtk.Window
+	GroupContent  *GroupContent
+	Notebook      *gtk.Notebook
+	PersonContent *PersonContent
+	SaveB         *gtk.ToolButton
+	Win           *gtk.Window
 }
 
 // EditPerformerWindow draws the window.
-func EditPerformerWindow() *EditPerformer{
-    win := SetupPopupWindow("Edit Performer", 350, 216)
-    box := SetupBox()
-    nb := SetupNotebook()
-    tb := SetupToolbar()
-    save := SetupToolButtonLabel("Save")
+func EditPerformerWindow() *EditPerformer {
+	win := SetupPopupWindow("Edit Performer", 350, 216)
+	box := SetupBox()
+	nb := SetupNotebook()
+	tb := SetupToolbar()
+	save := SetupToolButtonLabel("Save")
 
-    groupContent := NewGroupContent()
-    personContent := NewPersonContent()
+	groupContent := NewGroupContent()
+	personContent := NewPersonContent()
 
-    save.SetExpand(true)
-    save.SetVExpand(true)
+	save.SetExpand(true)
+	save.SetVExpand(true)
 
-    tb.Add(save)
-    tb.SetHExpand(true)
+	tb.Add(save)
+	tb.SetHExpand(true)
 
-    nb.AppendPage(personContent.grid, SetupLabel("Person"))
-    nb.AppendPage(groupContent.grid, SetupLabel("Group"))
+	nb.AppendPage(personContent.grid, SetupLabel("Person"))
+	nb.AppendPage(groupContent.grid, SetupLabel("Group"))
 
-    box.Add(nb)
-    box.Add(tb)
+	box.Add(nb)
+	box.Add(tb)
 
 	win.Add(box)
 	win.ShowAll()
 
 	return &EditPerformer{
-        GroupContent:  groupContent,
-        Notebook:      nb,
-        PersonContent: personContent,
-        SaveB:         save,
+		GroupContent:  groupContent,
+		Notebook:      nb,
+		PersonContent: personContent,
+		SaveB:         save,
 		Win:           win,
 	}
 }

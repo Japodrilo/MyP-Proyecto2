@@ -1,108 +1,104 @@
 package view
 
 import (
-    "github.com/gotk3/gotk3/gdk"
+	"github.com/gotk3/gotk3/gdk"
 	"github.com/gotk3/gotk3/gtk"
 )
 
-/**
- * Structure representing the main window, and holding the parameters
- * used by the controller.
- */
+// MainWindow represents the view of the main window.  As an object it
+// holds the gtk objects used by the controller.
 type MainWindow struct {
-    Buttons        map[string]*gtk.ToolButton
-    Grid           *gtk.Grid
-    ScrolledWindow *gtk.ScrolledWindow
-    SearchEntry    *gtk.SearchEntry
-    SongInfo       []*gtk.Label
-    TreeView       *TreeView
-    Win		       *gtk.Window
+	Buttons        map[string]*gtk.ToolButton
+	Grid           *gtk.Grid
+	ScrolledWindow *gtk.ScrolledWindow
+	SearchEntry    *gtk.SearchEntry
+	SongInfo       []*gtk.Label
+	TreeView       *TreeView
+	Win            *gtk.Window
 }
 
-/**
- * Draws the principal window and initializes the fields used
- * by the controller. 
- */
+// SetupMainWindow draws the main window and initializes the
+// gtk objects needed by the controller.
 func SetupMainWindow() *MainWindow {
-    buttons := make(map[string]*gtk.ToolButton)
+	buttons := make(map[string]*gtk.ToolButton)
 	win := SetupWindow("Rolas")
 	box := SetupBox()
-    gridtop := SetupGrid(gtk.ORIENTATION_HORIZONTAL)
-    boxinfo:= SetupBox()
-    albumLabel := SetupLabel("\tAlbum")
-    artistLabel := SetupLabel("\tArtist\n\n\n")
-    titleLabel := SetupLabel("\n\n\n\tTitle\n\n\n")
-    tb := SetupToolbar()
-    tb2 := SetupToolbar()
-    se := SetupSearchEntry()
-    play := SetupToolButtonIcon("gtk-media-play-ltr")
-    edit := SetupToolButtonIcon("gtk-edit")
-    performers := SetupToolButtonIcon("gtk-open")
-    new := SetupToolButtonIcon("gtk-new")
-    populate := SetupToolButtonIcon("gtk-refresh")
-    about := SetupToolButtonIcon("gtk-info")
-    treeview := NewTreeView()
-    scrwin := SetupScrolledWindow()
+	gridtop := SetupGrid(gtk.ORIENTATION_HORIZONTAL)
+	boxinfo := SetupBox()
+	albumLabel := SetupLabel("\tAlbum")
+	artistLabel := SetupLabel("\tArtist\n\n\n")
+	titleLabel := SetupLabel("\n\n\n\tTitle\n\n\n")
+	tb := SetupToolbar()
+	tb2 := SetupToolbar()
+	se := SetupSearchEntry()
+	play := SetupToolButtonIcon("gtk-media-play-ltr")
+	edit := SetupToolButtonIcon("gtk-edit")
+	performers := SetupToolButtonIcon("gtk-open")
+	new := SetupToolButtonIcon("gtk-new")
+	populate := SetupToolButtonIcon("gtk-refresh")
+	about := SetupToolButtonIcon("gtk-info")
+	treeview := NewTreeView()
+	scrwin := SetupScrolledWindow()
 	grid := SetupGrid(gtk.ORIENTATION_HORIZONTAL)
-    space1 := SetupLabel("                       ")
-    space2 := SetupLabel("                       ")
-    space3 := SetupLabel("                       ")
+	space1 := SetupLabel("                       ")
+	space2 := SetupLabel("                       ")
+	space3 := SetupLabel("                       ")
 
-    pix, _ := gdk.PixbufNewFromFileAtScale("../data/noimage.png", 250, 250, true)
-    defaultImage, _ := gtk.ImageNewFromPixbuf(pix)
+	pix, _ := gdk.PixbufNewFromFileAtScale("../data/noimage.png", 250, 250, true)
+	defaultImage, _ := gtk.ImageNewFromPixbuf(pix)
 
-    se.SetHExpand(true)
+	se.SetHExpand(true)
 
-    gridtop.Add(tb)
-    gridtop.Add(space1)
-    gridtop.Add(space2)
-    gridtop.Attach(se, 2, 0, 3, 1)
-    gridtop.Add(space3)
-    gridtop.Add(tb2)
+	gridtop.Add(tb)
+	gridtop.Add(space1)
+	gridtop.Add(space2)
+	gridtop.Attach(se, 2, 0, 3, 1)
+	gridtop.Add(space3)
+	gridtop.Add(tb2)
 
-    boxinfo.Add(titleLabel)
-    boxinfo.Add(artistLabel)
-    boxinfo.Add(albumLabel)
+	boxinfo.Add(titleLabel)
+	boxinfo.Add(artistLabel)
+	boxinfo.Add(albumLabel)
 
-    tb.Add(populate)
-    tb.Add(play)
-    tb.Add(edit)
-    tb.Add(performers)
-    tb.Add(new)
-    tb.SetStyle(gtk.TOOLBAR_ICONS)
+	tb.Add(populate)
+	tb.Add(play)
+	tb.Add(edit)
+	tb.Add(performers)
+	tb.Add(new)
+	tb.SetStyle(gtk.TOOLBAR_ICONS)
 
-    tb2.Add(about)
+	tb2.Add(about)
 
-    buttons["populate"] = populate
-    buttons["play"] = play
-    buttons["edit"] = edit
-    buttons["performers"] = performers
-    buttons["new"] = new
-    buttons["about"] = about
+	buttons["populate"] = populate
+	buttons["play"] = play
+	buttons["edit"] = edit
+	buttons["performers"] = performers
+	buttons["new"] = new
+	buttons["about"] = about
 
-    box.Add(gridtop)
-    box.Add(scrwin)
-    box.Add(grid)
+	box.Add(gridtop)
+	box.Add(scrwin)
+	box.Add(grid)
 
-    grid.Attach(defaultImage, 0, 0, 1, 1)
-    grid.Attach(boxinfo, 2, 0, 1, 1)
+	grid.Attach(defaultImage, 0, 0, 1, 1)
+	grid.Attach(boxinfo, 2, 0, 1, 1)
 
-    scrwin.SetVExpand(true)
-    scrwin.Add(treeview.TreeView)
+	scrwin.SetVExpand(true)
+	scrwin.Add(treeview.TreeView)
 
-    win.SetIconName("gtk-media-record")
+	win.SetIconName("gtk-media-record")
 	win.Add(box)
 	win.ShowAll()
 
-    songInfo := []*gtk.Label{titleLabel, artistLabel, albumLabel}
+	songInfo := []*gtk.Label{titleLabel, artistLabel, albumLabel}
 
 	return &MainWindow{
 		Buttons:        buttons,
-        Grid:           grid,
-        ScrolledWindow: scrwin,
-        SearchEntry:    se,
-        SongInfo:       songInfo,
-        TreeView:       treeview,
-        Win:            win,
+		Grid:           grid,
+		ScrolledWindow: scrwin,
+		SearchEntry:    se,
+		SongInfo:       songInfo,
+		TreeView:       treeview,
+		Win:            win,
 	}
 }
