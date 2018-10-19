@@ -6,15 +6,8 @@ import (
 	"github.com/gotk3/gotk3/gtk"
 )
 
-/**
- * Este archivo contiene funciones para inicializar los
- * objetos de gtk con manejo de errores integrado.   También
- * se añaden algunas funciones para obtener información de
- * los mismos, también con manejo de erores.
- * No se comenta cada una de las funciones, pues lo que hacen
- * puede deducirse directamente de su nombre.
- */
-
+// GetBufferEntry takes a gtk.SearchEntry as a parameter and
+// returns its gtk.EntryBuffer. It includes error handling.
 func GetBufferEntry(entry *gtk.SearchEntry) *gtk.EntryBuffer {
 	buffer, err := entry.GetBuffer()
 	if err != nil {
@@ -23,6 +16,8 @@ func GetBufferEntry(entry *gtk.SearchEntry) *gtk.EntryBuffer {
 	return buffer
 }
 
+// GetLabelText takes a gtk.Label as a parameter and
+// returns the text it contains. It includes error handling.
 func GetLabelText(label *gtk.Label) string {
 	text, err := label.GetText()
 	if err != nil {
@@ -31,6 +26,8 @@ func GetLabelText(label *gtk.Label) string {
 	return text
 }
 
+// GetTextEntry receives a gtk.Entry as a parameter and
+// returns the text it contains. It includes error handling.
 func GetTextEntry(entry *gtk.Entry) string {
 	text, err := entry.GetText()
 	if err != nil {
@@ -39,6 +36,9 @@ func GetTextEntry(entry *gtk.Entry) string {
 	return text
 }
 
+// GetTextEntryClean receives a gtk.SearchEntry as a parameter,
+// returns the text it contains and cleans its buffer. It includes
+// error handling.
 func GetTextEntryClean(entry *gtk.SearchEntry) string {
 	text, err := entry.GetText()
 	if err != nil {
@@ -49,6 +49,8 @@ func GetTextEntryClean(entry *gtk.SearchEntry) string {
 	return text + "\n"
 }
 
+// GetTextSearchEntry receives a gtk.SearchEntry as a parameter and
+// returns the text it contains. It includes error handling.
 func GetTextSearchEntry(entry *gtk.SearchEntry) string {
 	text, err := entry.GetText()
 	if err != nil {
@@ -57,6 +59,8 @@ func GetTextSearchEntry(entry *gtk.SearchEntry) string {
 	return text
 }
 
+// SetupBox creates a new gtk.Box object, sets its 'Homogeneous' property
+// to false, and returns it. It includes error handling.
 func SetupBox() *gtk.Box {
 	box, err := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
 	if err != nil {
@@ -66,12 +70,8 @@ func SetupBox() *gtk.Box {
 	return box
 }
 
-// func SetupButtonClick(label string, onClick func()) *gtk.Button {
-// 	btn := SetupButton(label)
-// 	btn.Connect("clicked", onClick)
-// 	return btn
-// }
-
+// SetupComboBoxText creates a new gtk.ComboBoxTex object
+// and returns it. It includes error handling.
 func SetupComboBoxText() *gtk.ComboBoxText {
 	cb, err := gtk.ComboBoxTextNew()
 	if err != nil {
@@ -80,6 +80,8 @@ func SetupComboBoxText() *gtk.ComboBoxText {
 	return cb
 }
 
+// SetupEntry creates a new gtk.Entry object and returns it.
+// It includes error handling.
 func SetupEntry() *gtk.Entry {
 	entry, err := gtk.EntryNew()
 	if err != nil {
@@ -88,6 +90,9 @@ func SetupEntry() *gtk.Entry {
 	return entry
 }
 
+// SetupGrid creates a new gtk.Grid object with orientation specified
+// by a parameter of type gtk.Orientation, and returns it.
+// It includes error handling.
 func SetupGrid(orient gtk.Orientation) *gtk.Grid {
 	grid, err := gtk.GridNew()
 	if err != nil {
@@ -97,6 +102,9 @@ func SetupGrid(orient gtk.Orientation) *gtk.Grid {
 	return grid
 }
 
+// SetupLabel creates a new gtk.Label object with text content given
+// by the argument of the function, sets its XAlign property to 0, and
+// returns it. It includes error handling.
 func SetupLabel(text string) *gtk.Label {
 	label, err := gtk.LabelNew(text)
 	if err != nil {
@@ -106,6 +114,8 @@ func SetupLabel(text string) *gtk.Label {
 	return label
 }
 
+// SetupListBox creates a new gtk.ListBox object and returns it.
+// It includes error handling.
 func SetupListBox() *gtk.ListBox {
 	lb, err := gtk.ListBoxNew()
 	if err != nil {
@@ -114,6 +124,10 @@ func SetupListBox() *gtk.ListBox {
 	return lb
 }
 
+// SetupListBoxRowLabel creates a new gtk.ListBoxRow object, creates a
+// new label containing the text given as an argument of the function,
+// adds the label to the listbox row, and returns it.
+// It includes error handling.
 func SetupListBoxRowLabel(text string) *gtk.ListBoxRow {
 	lbr, err := gtk.ListBoxRowNew()
 	if err != nil {
@@ -124,6 +138,8 @@ func SetupListBoxRowLabel(text string) *gtk.ListBoxRow {
 	return lbr
 }
 
+// SetupNotebook creates a new gtk.Notebook object and returns it.
+// It includes error handling.
 func SetupNotebook() *gtk.Notebook {
 	nb, err := gtk.NotebookNew()
 	if err != nil {
@@ -132,6 +148,10 @@ func SetupNotebook() *gtk.Notebook {
 	return nb
 }
 
+// SetupPopupWindow creates a new gtk.Window object with title,
+// width and height given by its parameters; context its "destroy" signal
+// to the window Close() function, and returns it. It includes error
+// handling.
 func SetupPopupWindow(title string, width, height int) *gtk.Window {
 	win, err := gtk.WindowNew(gtk.WINDOW_TOPLEVEL)
 	if err != nil {
@@ -146,6 +166,9 @@ func SetupPopupWindow(title string, width, height int) *gtk.Window {
 	return win
 }
 
+// SetupScrolled Window creates a new gtk.ScrolledWindow object,
+// sets its Policy to (1,1), HExpand to true, and returns it.
+// It includes error handling.
 func SetupScrolledWindow() *gtk.ScrolledWindow {
 	scrwin, err := gtk.ScrolledWindowNew(nil, nil)
 	if err != nil {
@@ -156,6 +179,8 @@ func SetupScrolledWindow() *gtk.ScrolledWindow {
 	return scrwin
 }
 
+// SetupSearchBar creates a new gtk.SearchBar object and returns it.
+// It includes error handling.
 func SetupSearchBar() *gtk.SearchBar {
 	sb, err := gtk.SearchBarNew()
 	if err != nil {
@@ -164,6 +189,8 @@ func SetupSearchBar() *gtk.SearchBar {
 	return sb
 }
 
+// SetupSearchEntry creates a new gtk.SearchEntry object and returns it.
+// It includes error handling.
 func SetupSearchEntry() *gtk.SearchEntry {
 	se, err := gtk.SearchEntryNew()
 	if err != nil {
@@ -172,6 +199,8 @@ func SetupSearchEntry() *gtk.SearchEntry {
 	return se
 }
 
+// SetupToolbar creates a new gtk.Toolbar object and returns it.
+// It includes error handling.
 func SetupToolbar() *gtk.Toolbar {
 	tb, err := gtk.ToolbarNew()
 	if err != nil {
@@ -180,6 +209,9 @@ func SetupToolbar() *gtk.Toolbar {
 	return tb
 }
 
+// SetupToolButtonIcon creates a new gtk.ToolButton object with image
+// determined by de icon name taken as argument, and returns it.
+// It includes error handling.
 func SetupToolButtonIcon(iconName string) *gtk.ToolButton {
 	image, err := gtk.ImageNewFromIconName(iconName, gtk.ICON_SIZE_BUTTON)
 	if err != nil {
@@ -192,6 +224,9 @@ func SetupToolButtonIcon(iconName string) *gtk.ToolButton {
 	return btn
 }
 
+// SetupToolButtonLabel creates a new gtk.ToolButton object with
+// text label given by the entry of the function, and returns it.
+// It includes error handling.
 func SetupToolButtonLabel(text string) *gtk.ToolButton {
 	btn, err := gtk.ToolButtonNew(nil, text)
 	if err != nil {
@@ -200,6 +235,9 @@ func SetupToolButtonLabel(text string) *gtk.ToolButton {
 	return btn
 }
 
+// SetupWindow creates a new gtk.Window object with fixed size
+// (1000 by 700), connects its "destroy" signal to gtk.MainQuit()
+// funcion, and returns it.   It includes error handling.
 func SetupWindow(title string) *gtk.Window {
 	win, err := gtk.WindowNew(gtk.WINDOW_TOPLEVEL)
 	if err != nil {
