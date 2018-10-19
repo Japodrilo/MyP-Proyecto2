@@ -240,8 +240,9 @@ func (database *Database) AllPersons() map[string]int64 {
     return persons
 }
 
+// CreateDB creates the tables specified in the rolas.sql file.
 func(database *Database) CreateDB() {
-    os.Remove(database.cache + "/rolas.db")
+    //os.Remove(database.cache + "/rolas.db")
 
     dot, err := dotsql.LoadFromFile("../data/rolas.sql")
     if err != nil {

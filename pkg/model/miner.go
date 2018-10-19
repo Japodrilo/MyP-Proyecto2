@@ -10,24 +10,25 @@ import (
     "github.com/dhowden/tag"
 )
 
-/**
- * This class represents a miner that searches for mp3 files in the
- * /home/user/Music directory, along the file tree, gathers their
- * information, and puts it in a Rola object, which is then loaded
- * into a channel for external use.
- */
+
+// A Miner searches for mp3 files in the /home/user/Music directory
+// along the file tree, gathers their information, and puts it in a
+// Rola object, which is then loaded into a channel for external use.
 type Miner struct {
     paths     []string
     ore       chan *Rola
     TrackList chan *Rola
 }
 
+// NewMiner returns a new Miner with an empty paths slice.
 func NewMiner() *Miner {
     return &Miner{
         paths: make([]string, 0),
     }
 }
 
+// Traverse walks the file tree looking for mp3 files and saving their
+// paths into the paths slice.
 func (miner *Miner) Traverse() {
     home, err := user.Current()
     if err != nil {
@@ -51,7 +52,9 @@ func (miner *Miner) Traverse() {
     }
 }
 
-
+// Extract traverses the paths slice, opens each of the files whose
+// paths are in the slice, reads the ID3v2 tag, saves the information
+// into a new Rola, and puts it in the ore channel of the miner.
 func (miner *Miner) Extract() {
     miner.ore = make(chan *Rola)
     genreConverter := GetGenre()
@@ -91,6 +94,10 @@ func (miner *Miner) Extract() {
     close(miner.ore)
 }
 
+// Populate takes the Rolas in the ore channel of the miner,
+// adds them to the database, and if it was a new Rola, it is
+// put in the TrackList channel.
+// TODO: Maybe this method should be in the controller package.
 func (miner *Miner) Populate(database *Database) {
     miner.TrackList = make(chan *Rola)
     for rola := range miner.ore {

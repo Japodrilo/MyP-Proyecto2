@@ -47,7 +47,6 @@ type SongInfo struct {
 func MainWindow() {
 	principal := NewPrincipal()
     principal.mainWindow.Win.ShowAll()
-    principal.Repopulate()
 }
 
 func NewPrincipal() *Principal {
@@ -65,7 +64,6 @@ func NewPrincipal() *Principal {
 
     if !exists {
         database.CreateDB()
-        principal.Populate()
     }
 
     database.LoadDB()
@@ -85,11 +83,9 @@ func NewPrincipal() *Principal {
     mainWindow.Buttons["populate"].Connect("clicked", func() {
         principal.treeSel.UnselectAll()
         principal.treeSel.SetMode(gtk.SELECTION_NONE)
-        principal.database, _ = model.NewDatabase()
-        principal.database.CreateDB()
-        principal.database.LoadDB()
+		principal.Repopulate()
         mainWindow.Buttons["populate"].SetSensitive(false)
-        glib.IdleAdd(principal.treeview.ListStore.Clear, )
+		time.Sleep(100 * time.Nanosecond)
         principal.Populate()
     })
 
@@ -366,7 +362,9 @@ func (principal *Principal) populateFromExistingDB(database *model.Database) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		glib.IdleAdd(principal.treeview.addRowStruct, &RowInfo{title, performer, album, genre, path, true, id})
+		if principal.treeview.Rows[id] == nil {
+			glib.IdleAdd(principal.treeview.addRowStruct, &RowInfo{title, performer, album, genre, path, true, id})
+		}
 	}
 	err = rows.Err()
 	if err != nil {

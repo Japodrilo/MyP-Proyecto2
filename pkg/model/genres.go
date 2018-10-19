@@ -1,6 +1,6 @@
 package model
 
-// Simple translator for ID3v1 genre codes, it contains
+// Genre is a simple translator for ID3v1 genre codes, it contains
 // a single dictionary with the codes as keys and the corresponding
 // genres as values (both are strings).  It is a singleton.
 type Genre struct {
@@ -9,7 +9,8 @@ type Genre struct {
 
 var instance *Genre
 
-// Returns the singleton instance of Genre.
+// GetGenre returns the singleton instance of Genre. The implementation
+// of the singleton is not thread-safe due to conflicts with gtk.
 func GetGenre() *Genre {
     if instance == nil {
         genres := make(map[string]string)
@@ -98,7 +99,8 @@ func GetGenre() *Genre {
     return instance
 }
 
-// Translates an ID3v1 genre code into its corresponding genre.
+// Get receives a string corresponding to an ID3v1 genre code
+// and returns the corresponding genre.
 func (genre *Genre) Get(code string) string {
     name := genre.genres[code]
     if name == "" {

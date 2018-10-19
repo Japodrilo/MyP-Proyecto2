@@ -21,6 +21,9 @@ type Parser struct {
 
 var instanceP *Parser
 
+// GetParser returns the singleton instance of Parser. The
+// singleton implementation is not thread safe due to conflicts
+// with gtk.
 func GetParser() *Parser {
     if instanceP == nil {
         instanceP = &Parser{
@@ -36,6 +39,7 @@ func GetParser() *Parser {
     return instanceP
 }
 
+// Parse parses a search string into a sqlite query.
 func (parser *Parser) Parse(entry string) (string, []interface{}, bool) {
     queryTerms := make([]interface{}, 0)
     if !strings.HasPrefix(entry, "*~*") {
