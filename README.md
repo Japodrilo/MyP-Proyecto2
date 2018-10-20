@@ -108,7 +108,7 @@ The godoc documentation can be found here [GoDoc](https://godoc.org/github.com/J
 
 The GUI should be intuitive to use, but just in case the button images are not
 present in your OS files:
-* The leftmost button is for mining rolas from the ~/Music folder.
+* The leftmost button is for mining rolas from the ~/Music folder and populating the tree view.
 * The second button (left to right) is for editing the performer of the rola chosen in the tree view.
 * The third button lets you edit an existing performer (person or group), and add member-group relations to the database.
 * The rightmost button is for creating a new person or group.
