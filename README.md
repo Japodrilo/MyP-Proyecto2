@@ -52,7 +52,7 @@ func (v *TreeSelection) SelectAll() {
 }
 
 // UnselectAll() is a wrapper around gtk_tree_selection_unselect_all().
-func (v *TreeSelection) SelectAll() {
+func (v *TreeSelection) UnselectAll() {
   C.gtk_tree_selection_unselect_all(v.native())
 }
 ```
