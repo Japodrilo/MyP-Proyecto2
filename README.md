@@ -2,70 +2,75 @@
 [![GoDoc](https://godoc.org/github.com/Japodrilo/MyP-Proyecto2?status.svg)](https://godoc.org/github.com/Japodrilo/MyP-Proyecto2)
 [![Go Report Card](https://goreportcard.com/badge/github.com/Japodrilo/MyP-Proyecto2)](https://goreportcard.com/report/github.com/Japodrilo/MyP-Proyecto2)
 
-Repositorio para el Proyecto 2 en Modelado y Programación
+Repository for Project 2 in the Modelado y Programación course of Professor
+Canek Peláez Valdés at the Faculty of Science, UNAM.
 
-El proyecto consiste en un reproductor de mp3 con acceso a una base de datos que
-incluye la información encontrada en las etiquetas ID3v2.4 en cada mp3. La base
-de datos está gestionada con SQLite, e incluye un lenguaje amigable para llevar
-a cabo las búsquedas sin tener que utilizar el lenguaje de SQL.
+This project consists of a rolas (songs, actually in mp3 format) manager, which
+has an SQLite database to perform queries based on the ID3v2 tags of the mp3 files.
+The database is populated by a miner that traverses the ~/Music folder, reading
+the ID3v2 tags of the mp3 files found, and saving its title, artist, album, genre,
+track number, year and attached picture.   The tags in the files are not modified,
+but the generated entries in the database can be modified through the GUI. A simple
+language is implemented to perform complex searches through the GUI.
 
-## Lenguaje utilizado
+## Language
 * go version go1.11 linux/amd64
 
-## Dependencias
-* Interfaz gráfica: [gotk3](https://github.com/gotk3/gotk3)
-* Decodificador mp3: [go-mp3](https://github.com/hajimehoshi/go-mp3)
-* Reproductor mp3: [oto](https://github.com/hajimehoshi/oto)
-* Controlador sqlite: [go-sqlite3](https://github.com/mattn/go-sqlite3)
-* Administrador sql: [dotsql](https://github.com/gchaincl/dotsql)
-* Manejo de ID3v2: [tag](https://github.com/dhowden/tag)
+## Dependencies
+* GUI: [gotk3](https://github.com/gotk3/gotk3)
+* SQLite controller: [go-sqlite3](https://github.com/mattn/go-sqlite3)
+* SQL manager: [dotsql](https://github.com/gchaincl/dotsql)
+* ID3v2 tags: [tag](https://github.com/dhowden/tag)
               
-## Instalation
+## Installation
 
-Antes de compilar, gotk3 debe estar instalado en el GOPATH, en la ruta
-src/github.com/gotk3/gotk3.   Para instalarlo, basta utilizar el comando
+Before compiling, gotk3 should be present in the GOPATH, in the path
+src/github.com/gotk3/gotk3. It is go getteable through the command
 
 ```bash
-$ go get github.com/gotk3/gotk3/gtk
+$ go get github.com/gotk3/gotk3/...
 ```
 
-Para instalarlo en Ubuntu/Debian, se necesitan las siguientes dependencias:
-GTK 3.6-3.16, GLib 2.36-2.40, y Cairo 1.10 or 1.12.
+Installation for Ubuntu/Debian has the following dependencies:
+GTK 3.6-3.16, GLib 2.36-2.40, and Cairo 1.10 or 1.12.
 
-Para instrucciones detalladas, consulte: [installation](https://github.com/gotk3/gotk3/wiki#installation)
-Las dependencias pueden obtenerse (Ubuntu/Debian) con el comando.
+For detailed instructions, refer to: [installation](https://github.com/gotk3/gotk3/wiki#installation)
+These dependencies can be obtained (Ubuntu/Debian) with the command.
 
 ```bash
 $ sudo apt-get install libgtk-3-dev libcairo2-dev libglib2.0-dev
 ```
 
-Para la reproducción de audio se utiliza go-mp3, que a su vez depende de oto,
-estos deben de encontrarse en el GOPAH en las rutas
-src/github.com/hajimehoshi/go-mp3 y src/github.com/hajimehoshi/oto,
-respectivamente.   Una vez en la ruta src/github.com/hajimehoshi/, éstos pueden
-obtenerse con los comandos
+Once the installation of gotk3 is complete, the following lines should
+be added to gtk.go among the other TreeSelection methods, approximately
+in line 8582 (a pull request with this changes will be started soon).
 
-```bash
-$ git clone https://github.com/hajimehoshi/go-mp3.git
-$ git clone https://github.com/hajimehoshi/oto.git
+```Go
+// SelectAll() is a wrapper around gtk_tree_selection_select_all().
+func (v *TreeSelection) SelectAll() {
+  C.gtk_tree_selection_select_all(v.native())
+}
+
+// UnselectAll() is a wrapper around gtk_tree_selection_unselect_all().
+func (v *TreeSelection) SelectAll() {
+  C.gtk_tree_selection_unselect_all(v.native())
+}
 ```
 
-El paquete oto requiere a su vez libasound2-dev,
-que puede obtenerese en Ubunto o Debian con el comando
+And then, gotk3 should be built again, you can directly use
 
 ```bash
-$ sudo apt install libasound2-dev
+$ GOPATH/github.com/gotk3/gotk3/go install ./...
 ```
 
-El manejo de etiquetas ID3v2 se realiza con el paquete tag, que se
-puede obtener con el comando
+Management of ID3v2 tags is done with the tag package, go getteable with
+the command
 
 ```bash
 $ go get github.com/dhowden/tag/...
 ```
 
-El controlador de sqlite es go-sqlite3, que puede obtenerse
-mediante
+The SQLite controller is go-sqlite3, go getteable with
 
 ```bash
 $ go get github.com/mattn/go-sqlite3
@@ -78,3 +83,53 @@ command
 ```bash
 $ go get github.com/gchaincl/dotsql
 ```
+
+With all the depencies ready, you can get this package with
+
+```bash
+$ go get github.com/Japodrilo/MyP-Proyecto2/...
+```
+
+An execultable file should have been generated in the GOPATH/bin
+directory.   Otherwise, it can be generated by
+
+```bash
+$ GOPATH/src/github.com/Japodrilo/MyP-Proyecto2/go install ./...
+```
+
+Alternatively, the application can be run directly with go run
+
+```bash
+$ GOPATH/src/github.com/Japodrilo/MyP-Proyecto2/cmd/rolas/go run rolas.go
+```
+
+## Use
+The godoc documentation can be found here [GoDoc](https://godoc.org/github.com/Japodrilo/MyP-Proyecto2).
+
+The GUI should be intuitive to use, but just in case the button images are not
+present in your OS files:
+* The leftmost button is for mining rolas from the ~/Music folder.
+* The second button (left to right) is for editing the performer of the rola chosen in the tree view.
+* The third button lets you edit an existing performer (person or group), and add member-group relations to the database.
+* The rightmost button is for creating a new person or group.
+
+Text introduced in the bar will be searched (case insensitive) in the title,
+artist, album and genre fields.   Any containent of the text will be considered
+a match.   Advanced searches should begin with *~* and any of the fields of a
+rola can be searched; for any of the fields, the first to letters of the field
+name (uppercase) should be wrapped by * *, and an operator should be added right
+after this. The operators are:
+* ~ for case insensitive containment.
+* = for exact match (case sensitive).
+* < less than (numeric values only).
+* \> greater than (numeric values only).
+
+Adding a ! before the operator will result in the negated version of the operator.
+Logical and and or can be included with && and ||, respectively.   The search will
+always be assumed to be in Normal Disjunctive Form.
+So, for example
+```
+*~* *TI*!~me && *AR*= The Beatles && *YE*<1968 || *TR*<5 && *TR*> 3
+```
+would return all the rolas by The Beatles before 1968 without the substring 'me' in
+its title, and also all the rolas with track number 4.
